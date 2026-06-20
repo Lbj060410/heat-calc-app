@@ -40,12 +40,15 @@ android {
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    kotlinOptions {
+        jvmTarget = "21"
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.10"
