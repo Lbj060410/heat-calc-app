@@ -11,12 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -76,25 +76,25 @@ fun OnboardingScreen(
             ) { page ->
                 when (page) {
                     0 -> InputStepPage(
-                        title = "您的身高是多少？",
+                        title = "请填写身高",
                         unit = "cm",
                         value = viewModel.heightInput,
                         onValueChange = { viewModel.updateHeight(it) },
-                        placeholder = "例如：175"
+                        placeholder = "例如 175"
                     )
                     1 -> InputStepPage(
-                        title = "您的体重是多少？",
+                        title = "请填写体重",
                         unit = "kg",
                         value = viewModel.weightInput,
                         onValueChange = { viewModel.updateWeight(it) },
-                        placeholder = "例如：65.5"
+                        placeholder = "例如 65.5"
                     )
                     2 -> InputStepPage(
-                        title = "您的年龄是多少？",
+                        title = "请填写年龄",
                         unit = "岁",
                         value = viewModel.ageInput,
                         onValueChange = { viewModel.updateAge(it) },
-                        placeholder = "例如：25"
+                        placeholder = "例如 25"
                     )
                     3 -> ActivityLevelStepPage(
                         selectedValue = viewModel.selectedActivityLevel,
@@ -126,7 +126,7 @@ fun OnboardingScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = if (pagerState.currentPage == 4) "开始使用" else "下一步",
+                    text = if (pagerState.currentPage == 4) "完成并进入应用" else "下一步",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -157,7 +157,7 @@ fun InputStepPage(
             modifier = Modifier.fillMaxWidth(0.7f),
             trailingIcon = { Text(unit, fontWeight = FontWeight.Bold) },
             placeholder = { Text(placeholder, color = Color.Gray) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 20.sp),
             shape = RoundedCornerShape(12.dp)
@@ -177,9 +177,9 @@ fun ActivityLevelStepPage(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "您的日常活动强度？", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(text = "请选择你的活动水平", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Text(
-            text = "这将帮助我们更准确地估算您的能量消耗",
+            text = "这个选项会影响每日热量目标，尽量选择最接近真实情况的一项。",
             fontSize = 14.sp,
             color = Color.Gray,
             modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
@@ -193,7 +193,11 @@ fun ActivityLevelStepPage(
                     .padding(vertical = 6.dp)
                     .clickable { onValueSelected(level) },
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    containerColor = if (isSelected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    }
                 ),
                 shape = RoundedCornerShape(16.dp),
                 border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
@@ -209,12 +213,20 @@ fun ActivityLevelStepPage(
                             text = level.label,
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            }
                         )
                         Text(
                             text = level.description,
                             fontSize = 12.sp,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) else Color.Gray
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            } else {
+                                Color.Gray
+                            }
                         )
                     }
                     RadioButton(
@@ -234,8 +246,8 @@ fun TargetStepPage(
 ) {
     val targets = listOf("lose", "gain", "maintain")
     val targetLabels = mapOf(
-        "lose" to "减脂（热量缺口）",
-        "gain" to "增肌（热量盈余）",
+        "lose" to "减脂",
+        "gain" to "增肌",
         "maintain" to "维持体重"
     )
 
@@ -244,7 +256,7 @@ fun TargetStepPage(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "您的健康目标是？", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(text = "请选择你的目标", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(32.dp))
 
         targets.forEach { target ->
@@ -255,7 +267,11 @@ fun TargetStepPage(
                     .padding(vertical = 8.dp)
                     .clickable { onValueSelected(target) },
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = if (isSelected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    }
                 ),
                 shape = RoundedCornerShape(16.dp),
                 border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
@@ -267,7 +283,11 @@ fun TargetStepPage(
                         .padding(vertical = 20.dp),
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (isSelected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                 )
             }
         }
