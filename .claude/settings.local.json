@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew --stop)",
+      "Bash(./gradlew assembleDebug)",
+      "Bash(tee build_output.txt)",
+      "Bash(grep -A 10 \"^e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/domain/usecase/CalculateBmrUseCase.kt\")",
+      "Bash(./gradlew build *)",
+      "Bash(./gradlew compileDebugKotlin)"
+    ]
+  }
+}

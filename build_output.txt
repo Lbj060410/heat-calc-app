@@ -1,0 +1,227 @@
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateDebugBuildConfig
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:generateDebugRFile UP-TO-DATE
+> Task :app:kspDebugKotlin
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:javaPreCompileDebug
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:compileDebugNavigationResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:mergeDebugJniLibFolders
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:mergeDebugNativeLibs
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:processDebugManifestForPackage
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:mergeDebugResources
+> Task :app:processDebugResources
+
+> Task :app:compileDebugKotlin FAILED
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/AiRepositoryImpl.kt:29:52 Unresolved reference 'AI_API_KEY'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/AiRepositoryImpl.kt:62:52 Unresolved reference 'AI_API_KEY'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/FoodRepositoryImpl.kt:58:16 Return type mismatch: expected 'Long', actual 'Unit'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:30:11 Argument type mismatch: actual type is 'SuspendFunction8<Array<Comparable<*> & Serializable>, ERROR CLASS: Cannot infer type for parameter gender, ERROR CLASS: Cannot infer type for parameter height, ERROR CLASS: Cannot infer type for parameter weight, ERROR CLASS: Cannot infer type for parameter age, ERROR CLASS: Cannot infer type for parameter goal, ERROR CLASS: Cannot infer type for parameter activityLevel, ERROR CLASS: Cannot infer type for parameter target, UserProfile>', but 'SuspendFunction1<Array<Comparable<*> & Serializable>, UserProfile>' was expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:30:19 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:30:27 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:30:35 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:30:43 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:30:48 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:30:54 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:30:69 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:32:24 Argument type mismatch: actual type is 'Array<Comparable<*> & Serializable>', but 'String' was expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/data/repository/UserRepositoryImpl.kt:70:19 'operator' modifier is required on 'FirNamedFunctionSymbol com/example/connects/domain/usecase/CalculateBmrUseCase.invoke' in 'invoke'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/domain/usecase/CalculateBmrUseCase.kt:26:16 None of the following candidates is applicable:
+fun <T : Comparable<T>> maxOf(a: T, b: T): T
+fun maxOf(a: Byte, b: Byte): Byte
+fun maxOf(a: Short, b: Short): Short
+fun maxOf(a: Int, b: Int): Int
+fun maxOf(a: Long, b: Long): Long
+fun maxOf(a: Float, b: Float): Float
+fun maxOf(a: Double, b: Double): Double
+fun <T : Comparable<T>> maxOf(a: T, vararg other: T): T
+fun maxOf(a: Byte, vararg other: Byte): Byte
+fun maxOf(a: Short, vararg other: Short): Short
+fun maxOf(a: Int, vararg other: Int): Int
+fun maxOf(a: Long, vararg other: Long): Long
+fun maxOf(a: Float, vararg other: Float): Float
+fun maxOf(a: Double, vararg other: Double): Double
+fun maxOf(a: UInt, b: UInt): UInt
+fun maxOf(a: ULong, b: ULong): ULong
+fun maxOf(a: UByte, b: UByte): UByte
+fun maxOf(a: UShort, b: UShort): UShort
+fun maxOf(a: UInt, vararg other: UInt): UInt
+fun maxOf(a: ULong, vararg other: ULong): ULong
+fun maxOf(a: UByte, vararg other: UByte): UByte
+fun maxOf(a: UShort, vararg other: UShort): UShort
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/domain/usecase/GetDailySummaryUseCase.kt:20:40 Overload resolution ambiguity between candidates:
+fun <T> Iterable<T>.sumOf(selector: (T) -> Int): Int
+fun <T> Iterable<T>.sumOf(selector: (T) -> UInt): UInt
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/domain/usecase/GetDailySummaryUseCase.kt:21:38 Overload resolution ambiguity between candidates:
+fun <T> Iterable<T>.sumOf(selector: (T) -> Int): Int
+fun <T> Iterable<T>.sumOf(selector: (T) -> UInt): UInt
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/domain/usecase/GetDailySummaryUseCase.kt:22:36 Overload resolution ambiguity between candidates:
+fun <T> Iterable<T>.sumOf(selector: (T) -> Int): Int
+fun <T> Iterable<T>.sumOf(selector: (T) -> UInt): UInt
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:18:30 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:18:31 Syntax error: Expecting ')'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:18:32 Syntax error: Expecting a top level declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:18:35 Syntax error: Expecting a top level declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:18:36 Syntax error: Expecting a top level declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:19:5 Property must be initialized.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:19:30 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:19:31 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:20:5 Property must be initialized.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:20:27 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:20:28 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:21:5 Property must be initialized.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:21:30 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:21:31 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:22:5 Property must be initialized.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:22:31 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:22:32 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:23:5 Property must be initialized.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:23:40 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:23:41 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:25:1 Syntax error: Expecting a top level declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:34:52 No value passed for parameter 'heightInput'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:21 Property delegate must have a 'getValue(OnboardingViewModel, KMutableProperty1<OnboardingViewModel, ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:21 Property delegate must have a 'setValue(OnboardingViewModel, KMutableProperty1<OnboardingViewModel, ERROR CLASS: Cannot infer argument for type parameter T>, ERROR CLASS: Cannot infer argument for type parameter T)' method. None of the following functions is applicable:
+fun <T> MutableState<T>.setValue(thisObj: Any?, property: KProperty<*>, value: T): Unit
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:24 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:24 Not enough information to infer type argument for 'T'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:24 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:24 Not enough information to infer type argument for 'T'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:39 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:39 Syntax error: Expecting ')'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:37:40 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:38:17 Syntax error: Expecting member declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:21 Property delegate must have a 'getValue(OnboardingViewModel, KMutableProperty1<OnboardingViewModel, ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:21 Property delegate must have a 'setValue(OnboardingViewModel, KMutableProperty1<OnboardingViewModel, ERROR CLASS: Cannot infer argument for type parameter T>, ERROR CLASS: Cannot infer argument for type parameter T)' method. None of the following functions is applicable:
+fun <T> MutableState<T>.setValue(thisObj: Any?, property: KProperty<*>, value: T): Unit
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:24 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:24 Not enough information to infer type argument for 'T'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:24 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:24 Not enough information to infer type argument for 'T'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:39 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:39 Syntax error: Expecting ')'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:39:40 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:40:17 Syntax error: Expecting member declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:18 Property delegate must have a 'getValue(OnboardingViewModel, KMutableProperty1<OnboardingViewModel, ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:18 Property delegate must have a 'setValue(OnboardingViewModel, KMutableProperty1<OnboardingViewModel, ERROR CLASS: Cannot infer argument for type parameter T>, ERROR CLASS: Cannot infer argument for type parameter T)' method. None of the following functions is applicable:
+fun <T> MutableState<T>.setValue(thisObj: Any?, property: KProperty<*>, value: T): Unit
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:21 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:21 Not enough information to infer type argument for 'T'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:21 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:21 Not enough information to infer type argument for 'T'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:36 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:36 Syntax error: Expecting ')'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:41:37 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:42:17 Syntax error: Expecting member declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:43:24 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:43:39 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:43:39 Syntax error: Expecting ')'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:43:40 Unresolved reference 'male'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:43:44 Syntax error: Expecting an element.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:43:45 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:44:17 Syntax error: Expecting member declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:45:25 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:45:40 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:45:40 Syntax error: Expecting ')'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:45:41 Unresolved reference 'maintain'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:45:49 Syntax error: Expecting an element.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:45:50 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:46:17 Syntax error: Expecting member declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:47:34 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:47:49 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:47:49 Syntax error: Expecting ')'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:47:50 Unresolved reference 'moderate'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:47:58 Syntax error: Expecting an element.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:47:59 Syntax error: Property getter or setter expected.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:48:17 Syntax error: Expecting member declaration.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:81:13 No parameter with name 'weightInput' found.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:82:13 No parameter with name 'ageInput' found.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:83:13 No parameter with name 'genderInput' found.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:84:13 No parameter with name 'selectedGoal' found.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:85:13 No parameter with name 'selectedActivityLevel' found.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:86:13 No parameter with name 'isInputValid' found.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:109:45 Syntax error: Expecting an element.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:109:46 Unresolved reference 'male'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:109:50 Syntax error: Expecting an element.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:110:27 'operator' modifier is required on 'FirNamedFunctionSymbol com/example/connects/domain/usecase/CalculateBmrUseCase.invoke' in 'invoke'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:114:21 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:114:21 Syntax error: Expecting '->'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:114:22 Unresolved reference 'lose'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:114:26 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:114:26 Syntax error: Expecting '->'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:114:27 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:114:28 Syntax error: Expecting an expression, is-condition or in-condition.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:115:21 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:115:21 Syntax error: Expecting '->'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:115:22 Unresolved reference 'gain'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:115:26 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:115:26 Syntax error: Expecting '->'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:115:27 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:115:28 Syntax error: Expecting an expression, is-condition or in-condition.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:119:33 No value passed for parameter 'gender'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:119:33 No value passed for parameter 'height'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:119:33 No value passed for parameter 'weight'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:119:33 No value passed for parameter 'age'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:119:33 No value passed for parameter 'goal'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:119:33 No value passed for parameter 'activityLevel'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:119:33 No value passed for parameter 'dailyCaloricTarget'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:120:27 Syntax error: Expecting an expression.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:120:28 Syntax error: Expecting ')'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:120:29 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:121:21 Unresolved reference 'gender'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:121:41 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:122:21 Unresolved reference 'height'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:122:41 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:123:21 Unresolved reference 'weight'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:123:41 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:124:21 Unresolved reference 'age'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:124:35 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:125:21 Unresolved reference 'goal'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:125:40 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:126:21 Unresolved reference 'activityLevel'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:126:58 Syntax error: Unexpected tokens (use ';' to separate expressions on the same line).
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:127:21 Unresolved reference 'dailyCaloricTarget'.
+e: file:///F:/AndroidStodioProjects/connects/app/src/main/java/com/example/connects/features/onboarding/OnboardingViewModel.kt:128:17 Syntax error: Expecting an element.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 8s
+31 actionable tasks: 20 executed, 11 up-to-date

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 1. 基础网络权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- 2. 核心相机权限 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- 🛡️ 【防闪退防弹衣】告诉系统：我们的 App 必须要用到相机硬件 -->
+    <!-- 很多新系统如果没有这一行，直接去调用相机就会发生惨烈的崩溃闪退 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <!-- 3. 🚨 【Android 13+ 严正适配】消灭 READ_EXTERNAL_STORAGE 导致的红线与闪退 -->
+    <!-- 在高版本安卓中，传统的 READ_EXTERNAL_STORAGE 已经失效，如果是看相册里的食物图片，必须改用以下精准声明 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- 兼容 Android 12 及以下系统的老存储权限（加入 maxSdkVersion 约束） -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <application
+        android:name=".CalorieApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Connects">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Connects">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity
+            android:name=".features.home.CameraScanActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Connects" />
+    </application>
+
+</manifest>
