@@ -69,22 +69,22 @@ import kotlin.math.ceil
 import kotlin.math.floor
 
 private val genderOptions = listOf(
-    "male" to "Male",
-    "female" to "Female"
+    "male" to "男",
+    "female" to "女"
 )
 
 private val goalOptions = listOf(
-    "lose" to "Lose weight",
-    "gain" to "Gain weight",
-    "maintain" to "Maintain"
+    "lose" to "减脂",
+    "gain" to "增肌",
+    "maintain" to "维持"
 )
 
 private val activityOptions = listOf(
-    "sedentary" to "Sedentary",
-    "light" to "Light",
-    "moderate" to "Moderate",
-    "active" to "Active",
-    "very_active" to "Very active"
+    "sedentary" to "久坐",
+    "light" to "轻度",
+    "moderate" to "中度",
+    "active" to "活跃",
+    "very_active" to "高强度"
 )
 
 @Composable
@@ -144,7 +144,7 @@ private fun ProfileLandingPage(
 
             val profile = uiState.userProfile
             if (profile == null) {
-                Text("Profile is empty")
+                Text("个人资料为空")
                 return@Column
             }
 
@@ -171,7 +171,7 @@ private fun ProfileLandingPage(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Tap to view and edit basic info and goals",
+                            text = "点击查看和编辑基本信息与目标",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -184,7 +184,7 @@ private fun ProfileLandingPage(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Current target", style = MaterialTheme.typography.labelLarge)
+                    Text("当前目标", style = MaterialTheme.typography.labelLarge)
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "${profile.dailyCaloricTarget} kcal/day",
@@ -241,16 +241,16 @@ private fun ProfileDetailPage(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile Details") },
+                title = { Text("个人资料") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
                 actions = {
                     if (!uiState.isEditing) {
                         IconButton(onClick = onStartEditing) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit")
+                            Icon(Icons.Default.Edit, contentDescription = "编辑")
                         }
                     }
                 }
@@ -276,7 +276,7 @@ private fun ProfileDetailPage(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Profile is empty")
+                Text("个人资料为空")
             }
             return@Scaffold
         }
@@ -303,7 +303,7 @@ private fun ProfileDetailPage(
                     Avatar(initial = (name.firstOrNull()?.uppercaseChar()?.toString() ?: "U"))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Username", style = MaterialTheme.typography.labelLarge)
+                        Text("用户名", style = MaterialTheme.typography.labelLarge)
                         Spacer(modifier = Modifier.height(4.dp))
                         if (uiState.isEditing) {
                             OutlinedTextField(
@@ -333,10 +333,10 @@ private fun ProfileDetailPage(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Basic Info & Health Goal", fontWeight = FontWeight.Bold)
+                    Text("基本信息与健康目标", fontWeight = FontWeight.Bold)
 
                     OptionDropdownField(
-                        label = "Gender",
+                        label = "性别",
                         options = genderOptions,
                         value = gender,
                         enabled = uiState.isEditing,
@@ -346,7 +346,7 @@ private fun ProfileDetailPage(
                     OutlinedTextField(
                         value = age,
                         onValueChange = { age = it },
-                        label = { Text("Age") },
+                        label = { Text("年龄") },
                         enabled = uiState.isEditing,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -356,7 +356,7 @@ private fun ProfileDetailPage(
                     OutlinedTextField(
                         value = height,
                         onValueChange = { height = it },
-                        label = { Text("Height (cm)") },
+                        label = { Text("身高 (cm)") },
                         enabled = uiState.isEditing,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -366,7 +366,7 @@ private fun ProfileDetailPage(
                     OutlinedTextField(
                         value = weight,
                         onValueChange = { weight = it },
-                        label = { Text("Weight (kg)") },
+                        label = { Text("体重 (kg)") },
                         enabled = uiState.isEditing,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -374,7 +374,7 @@ private fun ProfileDetailPage(
                     )
 
                     OptionDropdownField(
-                        label = "Goal",
+                        label = "目标",
                         options = goalOptions,
                         value = goal,
                         enabled = uiState.isEditing,
@@ -382,7 +382,7 @@ private fun ProfileDetailPage(
                     )
 
                     OptionDropdownField(
-                        label = "Activity level",
+                        label = "活动水平",
                         options = activityOptions,
                         value = activity,
                         enabled = uiState.isEditing,
@@ -399,7 +399,7 @@ private fun ProfileDetailPage(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Daily calorie target", style = MaterialTheme.typography.labelLarge)
+                    Text("每日热量目标", style = MaterialTheme.typography.labelLarge)
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "${profile.dailyCaloricTarget} kcal",
@@ -418,7 +418,7 @@ private fun ProfileDetailPage(
                         onClick = onCancelEditing,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel")
+                        Text("取消")
                     }
 
                     Button(
@@ -435,7 +435,7 @@ private fun ProfileDetailPage(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Save")
+                        Text("保存")
                     }
                 }
             }
@@ -532,27 +532,27 @@ private fun WeightTrendCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Weight Trend", fontWeight = FontWeight.Bold)
+            Text("体重趋势", fontWeight = FontWeight.Bold)
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = selectedRange == WeightChartRange.MONTH,
                     onClick = { onRangeChange(WeightChartRange.MONTH) },
-                    label = { Text("1M") }
+                    label = { Text("1月") }
                 )
                 FilterChip(
                     selected = selectedRange == WeightChartRange.YEAR,
                     onClick = { onRangeChange(WeightChartRange.YEAR) },
-                    label = { Text("1Y") }
+                    label = { Text("1年") }
                 )
                 FilterChip(
                     selected = selectedRange == WeightChartRange.ALL,
                     onClick = { onRangeChange(WeightChartRange.ALL) },
                     label = {
                         val allLabel = if (firstRecordDate != null) {
-                            "Since ${firstRecordDate.year}"
+                            "自 ${firstRecordDate.year} 年起"
                         } else {
-                            "All"
+                            "全部"
                         }
                         Text(allLabel)
                     }
@@ -568,7 +568,7 @@ private fun WeightTrendCard(
 
             if (records.isEmpty()) {
                 Text(
-                    text = "No historical record yet. Axis is shown for future records.",
+                    text = "暂无历史记录，后续记录将显示在坐标轴上。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -607,9 +607,9 @@ private fun WeightTrendChart(
     val totalDays = ChronoUnit.DAYS.between(windowStart, windowEnd).coerceAtLeast(1)
 
     val xLabelFormatter = when (selectedRange) {
-        WeightChartRange.MONTH -> DateTimeFormatter.ofPattern("MM/dd")
-        WeightChartRange.YEAR -> DateTimeFormatter.ofPattern("yyyy/MM")
-        WeightChartRange.ALL -> DateTimeFormatter.ofPattern("yyyy")
+        WeightChartRange.MONTH -> DateTimeFormatter.ofPattern("MM月dd日")
+        WeightChartRange.YEAR -> DateTimeFormatter.ofPattern("yyyy年MM月")
+        WeightChartRange.ALL -> DateTimeFormatter.ofPattern("yyyy年")
     }
 
     Canvas(
