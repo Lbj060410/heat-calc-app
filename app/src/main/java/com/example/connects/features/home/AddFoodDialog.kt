@@ -49,15 +49,15 @@ fun AddFoodDialog(
     var calories by remember { mutableStateOf("") }
 
     LaunchedEffect(initialData) {
-        if (initialData != null) {
-            foodName = initialData.foodName
-            amountGrams = initialData.amountGrams.toString()
-            carbs = initialData.carbs.toString()
-            protein = initialData.protein.toString()
-            fat = initialData.fat.toString()
-            fiber = initialData.fiber.toString()
-            sodium = initialData.sodium.toString()
-            calories = if (initialData.calories > 0f) initialData.calories.toString() else ""
+        initialData?.let {
+            foodName = it.foodName
+            amountGrams = it.amountGrams.toString()
+            carbs = it.carbs.toString()
+            protein = it.protein.toString()
+            fat = it.fat.toString()
+            fiber = it.fiber.toString()
+            sodium = it.sodium.toString()
+            calories = if (it.calories > 0f) it.calories.toString() else ""
         }
     }
 
@@ -181,7 +181,7 @@ fun AddFoodDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     trailingIcon = { Text("kcal", modifier = Modifier.padding(end = 12.dp)) },
-                    supportingText = { Text("会根据三大营养素自动估算") }
+                    supportingText = { Text("会根据三大营养素自动推算") }
                 )
 
                 OutlinedButton(

@@ -49,8 +49,8 @@ import com.example.connects.domain.model.FoodCategory
 private data class FoodCategoryTab(val key: String, val label: String)
 
 private val foodCategoryTabs = listOf(
-    FoodCategoryTab(FoodCategory.ALL, "all"),
-    FoodCategoryTab(FoodCategory.CUSTOM, "自己添加"),
+    FoodCategoryTab(FoodCategory.ALL, "全部"),
+    FoodCategoryTab(FoodCategory.CUSTOM, "自定义"),
     FoodCategoryTab(FoodCategory.STAPLE, "主食"),
     FoodCategoryTab(FoodCategory.VEGETABLE, "蔬菜"),
     FoodCategoryTab(FoodCategory.MEAT_DAIRY, "肉/奶"),
@@ -98,7 +98,7 @@ fun FoodPickerScreen(
                         .fillMaxWidth()
                         .height(52.dp)
                 ) {
-                    Text("添加食物")
+                    Text("新增食物")
                 }
             }
         }
@@ -210,7 +210,7 @@ fun FoodPickerScreen(
 
                         if (uiState.visibleFoods.isEmpty()) {
                             item {
-                                Text("没有匹配食物", style = MaterialTheme.typography.bodyMedium)
+                                Text("没有匹配的食物", style = MaterialTheme.typography.bodyMedium)
                             }
                         }
 

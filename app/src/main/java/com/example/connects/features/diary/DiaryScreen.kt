@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.connects.domain.model.FoodEntry
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -92,7 +92,6 @@ fun DiaryScreen(
 
             item {
                 DateHeader(
-                    date = uiState.selectedDate,
                     totalCalories = uiState.totalCalories,
                     formattedDate = viewModel.getFormattedDate(uiState.selectedDate),
                     dayOfWeek = viewModel.getDayOfWeek(uiState.selectedDate)
@@ -134,7 +133,10 @@ fun CalendarPicker(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { currentMonth = currentMonth.minusMonths(1) }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "上个月")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "上个月"
+                    )
                 }
 
                 Text(
@@ -144,7 +146,10 @@ fun CalendarPicker(
                 )
 
                 IconButton(onClick = { currentMonth = currentMonth.plusMonths(1) }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "下个月")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "下个月"
+                    )
                 }
             }
 
@@ -251,7 +256,6 @@ fun RowScope.DayCell(
 
 @Composable
 private fun DateHeader(
-    date: LocalDate,
     totalCalories: Int,
     formattedDate: String,
     dayOfWeek: String
@@ -295,22 +299,23 @@ private fun EmptyState() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(imageVector = Icons.Filled.DateRange, contentDescription = null)
             Text(text = "今天还没有记录")
-            Text(text = "添加一条饮食记录开始统计")
+            Text(text = "添加一条饮食记录开始统计。")
         }
     }
 }
 
 @Composable
-private fun FoodEntryCard(entry: Any) {
+private fun FoodEntryCard(entry: FoodEntry) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Text(
-            text = entry.toString(),
-            modifier = Modifier.padding(16.dp)
-        )
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(text = entry.foodName, fontWeight = FontWeight.Bold)
+            Text(text = "${entry.amountGrams.toInt()} g · ${entry.mealType}")
+            Text(text = "${entry.totalCalories.toInt()} kcal", color = MaterialTheme.colorScheme.primary)
+        }
     }
 }

@@ -48,35 +48,15 @@ private const val MEAL_BREAKFAST = "早餐"
 private const val MEAL_LUNCH = "午餐"
 private const val MEAL_DINNER = "晚餐"
 private const val MEAL_SNACK = "加餐"
-private const val LEGACY_MEAL_BREAKFAST = "鏃╅"
-private const val LEGACY_MEAL_LUNCH = "鍗堥"
-private const val LEGACY_MEAL_DINNER = "鏅氶"
-private const val LEGACY_MEAL_SNACK = "鍔犻"
+private const val LEGACY_MEAL_BREAKFAST = "早餐"
+private const val LEGACY_MEAL_LUNCH = "午餐"
+private const val LEGACY_MEAL_DINNER = "晚餐"
+private const val LEGACY_MEAL_SNACK = "加餐"
 
 private val GENERIC_FOOD_NAME_KEYS = listOf(
     "营养", "成分", "项目", "顶目", "項目", "每100", "能量", "蛋白", "脂肪", "碳水",
     "膳食纤维", "营养素参考值", "nrv", "nutrition facts"
 )
-private val KNOWN_GARBLED_FOOD_NAME_MAP = mapOf(
-    "绫抽キ" to "米饭",
-    "棣掑ご" to "馒头",
-    "闈㈡潯" to "面条",
-    "鐕曢害鐗?" to "燕麦片",
-    "瑗垮叞鑺?" to "西兰花",
-    "鑿犺彍" to "菠菜",
-    "鐣寗" to "番茄",
-    "楦¤兏鑲?" to "鸡胸肉",
-    "楦¤泲" to "鸡蛋",
-    "绾墰濂?" to "纯牛奶",
-    "閰稿ザ" to "酸奶",
-    "鑻规灉" to "苹果",
-    "棣欒晧" to "香蕉",
-    "姗欏瓙" to "橙子",
-    "楗煎共" to "饼干",
-    "钖墖" to "薯片",
-    "榛戝阀鍏嬪姏" to "黑巧克力"
-)
-
 private data class NumericToken(
     val value: Float,
     val unit: String,
@@ -337,8 +317,8 @@ class HomeViewModel @Inject constructor(
 
         t = t.replace(Regex("(?i)k[h]"), "kJ")
         t = t.replace(Regex("(?i)kca[1il]"), "kcal")
-        t = t.replace(Regex("(?i)营养或分表"), "营养成分表")
-        t = t.replace(Regex("(?i)营养称以"), "营养成分")
+        t = t.replace(Regex("(?i)营养成分表|营养成份表|营养或分表"), "营养成分表")
+        t = t.replace(Regex("(?i)营养成分|营养称以|营养称分"), "营养成分")
         t = t.replace(Regex("(?i)项[目自]"), "项目")
         t = t.replace(Regex("(?i)蛋[日白目]质"), "蛋白质")
         t = t.replace(Regex("(?i)脂[防肪]"), "脂肪")
@@ -836,12 +816,12 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun extractNumberFromNutritionLine(line: String): Float {
-        val cleanedLine = line.replace(Regex("绗琝\\s*\\d+\\s*琛孾:锛歖?"), "")
+        val cleanedLine = line.replace(Regex("第\\s*\\d+\\s*行[:：]"), "")
         return extractNumber(cleanedLine)
     }
 
     private fun normalizePer100gValue(line: String, lineType: String, perServingFactor: Float): Float {
-        val cleaned = line.replace(Regex("绗琝\\s*\\d+\\s*琛孾:锛歖?"), "")
+        val cleaned = line.replace(Regex("第\\s*\\d+\\s*行[:：]"), "")
         val lower = cleaned.lowercase()
         val raw = extractNumber(cleaned)
         if (raw <= 0f) return 0f
@@ -994,8 +974,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun decodeGarbledText(value: String): String {
-        if (value.isBlank()) return value
-        return KNOWN_GARBLED_FOOD_NAME_MAP[value] ?: value
+        return value
     }
 
     private fun presetFoods(): List<FoodItem> {
