@@ -1,22 +1,38 @@
 package com.example.connects.features.onboarding
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.verticalScroll
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -31,7 +47,6 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     onFinished: () -> Unit
 ) {
-    // 增加到 5 页
     val pagerState = rememberPagerState(pageCount = { 5 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -65,21 +80,21 @@ fun OnboardingScreen(
                         unit = "cm",
                         value = viewModel.heightInput,
                         onValueChange = { viewModel.updateHeight(it) },
-                        placeholder = "例如: 175"
+                        placeholder = "例如：175"
                     )
                     1 -> InputStepPage(
                         title = "您的体重是多少？",
                         unit = "kg",
                         value = viewModel.weightInput,
                         onValueChange = { viewModel.updateWeight(it) },
-                        placeholder = "例如: 65.5"
+                        placeholder = "例如：65.5"
                     )
                     2 -> InputStepPage(
                         title = "您的年龄是多少？",
                         unit = "岁",
                         value = viewModel.ageInput,
                         onValueChange = { viewModel.updateAge(it) },
-                        placeholder = "例如: 25"
+                        placeholder = "例如：25"
                     )
                     3 -> ActivityLevelStepPage(
                         selectedValue = viewModel.selectedActivityLevel,
@@ -111,7 +126,7 @@ fun OnboardingScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = if (pagerState.currentPage == 4) "开启健康之旅" else "下一步",
+                    text = if (pagerState.currentPage == 4) "开始使用" else "下一步",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -144,7 +159,7 @@ fun InputStepPage(
             placeholder = { Text(placeholder, color = Color.Gray) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
-            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 20.sp),
+            textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 20.sp),
             shape = RoundedCornerShape(12.dp)
         )
     }
@@ -219,8 +234,8 @@ fun TargetStepPage(
 ) {
     val targets = listOf("lose", "gain", "maintain")
     val targetLabels = mapOf(
-        "lose" to "减脂 (热量缺口)",
-        "gain" to "增肌 (热量盈余)",
+        "lose" to "减脂（热量缺口）",
+        "gain" to "增肌（热量盈余）",
         "maintain" to "维持体重"
     )
 

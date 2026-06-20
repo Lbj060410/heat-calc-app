@@ -186,13 +186,13 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Today's Summary",
+                        text = "今日汇总",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${uiState.remainingCalories} kcal left",
+                        text = "剩余 ${uiState.remainingCalories} kcal",
                         fontSize = 18.sp,
                         color = if (uiState.remainingCalories >= 0) Color(0xFF4CAF50) else Color(0xFFF44336),
                         fontWeight = FontWeight.SemiBold
@@ -212,18 +212,18 @@ fun HomeScreen(
                         modifier = Modifier.padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        NutrientBar(label = "Carbs", state = uiState.carbs)
-                        NutrientBar(label = "Protein", state = uiState.protein)
-                        NutrientBar(label = "Fat", state = uiState.fat)
-                        NutrientBar(label = "Fiber", state = uiState.fiber)
-                        NutrientBar(label = "Sodium", state = uiState.sodium, unit = "mg")
+                        NutrientBar(label = "碳水", state = uiState.carbs)
+                        NutrientBar(label = "蛋白质", state = uiState.protein)
+                        NutrientBar(label = "脂肪", state = uiState.fat)
+                        NutrientBar(label = "膳食纤维", state = uiState.fiber)
+                        NutrientBar(label = "钠", state = uiState.sodium, unit = "mg")
                     }
                 }
             }
 
             item {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                    Text("Meals", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                    Text("餐次", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
                 }
             }
 
@@ -255,7 +255,7 @@ fun HomeScreen(
                                     fontSize = 16.sp
                                 )
                                 Text(
-                                    text = "${meal.totalCalories} kcal · ${meal.count} items",
+                                    text = "${meal.totalCalories} kcal · ${meal.count} 项",
                                     color = Color.Gray
                                 )
                             }
