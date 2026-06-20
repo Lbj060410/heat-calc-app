@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Construction
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,7 +34,7 @@ fun AIScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(imageVector = Icons.Filled.Construction, contentDescription = null)
+                Icon(imageVector = Icons.Filled.Build, contentDescription = null)
                 Text(
                     text = "\u0041\u0049 \u529f\u80fd\u6682\u672a\u5f00\u653e",
                     style = MaterialTheme.typography.titleLarge

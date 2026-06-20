@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -159,7 +159,7 @@ fun CalendarPicker(
                         text = dayName,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.width(40.dp),
                         textAlign = TextAlign.Center
                     )
                 }
@@ -186,7 +186,7 @@ fun CalendarPicker(
                         if (dayIndex < startOffset || currentDay > daysInMonth) {
                             Box(
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .width(40.dp)
                                     .height(40.dp)
                             )
                         } else {
@@ -232,7 +232,7 @@ fun RowScope.DayCell(
 
     Box(
         modifier = Modifier
-            .weight(1f)
+            .width(40.dp)
             .padding(horizontal = 2.dp)
             .height(40.dp)
             .clip(CircleShape)
