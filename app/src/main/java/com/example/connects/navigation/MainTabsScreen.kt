@@ -6,7 +6,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,8 +22,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.connects.features.ai.AIScreen
-import com.example.connects.features.ai.AIVieModel
 import com.example.connects.features.diary.DiaryScreen
 import com.example.connects.features.diary.DiaryViewModel
 import com.example.connects.features.home.HomeScreen
@@ -41,23 +38,18 @@ private data class BottomTab(
 private val bottomTabs = listOf(
     BottomTab(
         screen = Screen.Home,
-        label = "Home",
-        icon = { Icon(Icons.Filled.Home, contentDescription = "Home") }
+        label = "首页",
+        icon = { Icon(Icons.Filled.Home, contentDescription = "首页") }
     ),
     BottomTab(
         screen = Screen.Diary,
-        label = "Diary",
-        icon = { Icon(Icons.Filled.DateRange, contentDescription = "Diary") }
-    ),
-    BottomTab(
-        screen = Screen.AI,
-        label = "AI",
-        icon = { Icon(Icons.Filled.Star, contentDescription = "AI") }
+        label = "日记",
+        icon = { Icon(Icons.Filled.DateRange, contentDescription = "日记") }
     ),
     BottomTab(
         screen = Screen.Profile,
-        label = "Profile",
-        icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") }
+        label = "我的",
+        icon = { Icon(Icons.Filled.Person, contentDescription = "我的") }
     )
 )
 
@@ -111,8 +103,7 @@ fun MainTabsScreen() {
             }
 
             composable(Screen.AI.route) {
-                val aiViewModel: AIVieModel = hiltViewModel()
-                AIScreen(viewModel = aiViewModel)
+                PlaceholderPage("AI 功能开发中")
             }
 
             composable(Screen.Profile.route) {

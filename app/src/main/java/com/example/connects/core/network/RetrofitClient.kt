@@ -10,7 +10,7 @@ object RetrofitClient {
     private const val DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1/"
     
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = HttpLoggingInterceptor.Level.NONE
     }
     
     private val okHttpClient = OkHttpClient.Builder()
