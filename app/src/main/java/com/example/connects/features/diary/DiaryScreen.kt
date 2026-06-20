@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -62,14 +63,14 @@ fun DiaryScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "饮食日记",
+                    text = "饮食日志",
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "记录每天的饮食",
+                    text = "记录每天的饮食情况，方便查看历史与趋势。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.8f)
                 )
@@ -218,38 +219,38 @@ fun RowScope.DayCell(
     isToday: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = when {
+    val background = when {
         isSelected -> MaterialTheme.colorScheme.primary
         isToday -> MaterialTheme.colorScheme.primaryContainer
         else -> Color.Transparent
     }
-
-    val textColor = when {
+    val contentColor = when {
         isSelected -> Color.White
-        isToday -> MaterialTheme.colorScheme.primary
+        isToday -> MaterialTheme.colorScheme.onPrimaryContainer
         else -> MaterialTheme.colorScheme.onSurface
     }
 
     Box(
         modifier = Modifier
             .weight(1f)
+            .padding(horizontal = 2.dp)
             .height(40.dp)
             .clip(CircleShape)
-            .background(backgroundColor)
+            .background(background)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = day.toString(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = textColor,
+            color = contentColor,
+            fontSize = 14.sp,
             fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal
         )
     }
 }
 
 @Composable
-fun DateHeader(
+private fun DateHeader(
     date: LocalDate,
     totalCalories: Int,
     formattedDate: String,
@@ -259,115 +260,57 @@ fun DateHeader(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = formattedDate,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = dayOfWeek,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = "总热量",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                )
-                Text(
-                    text = "$totalCalories kcal",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun FoodEntryCard(entry: com.example.connects.domain.model.FoodEntry) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.foodName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${entry.amountGrams.toInt()}g · ${entry.mealType}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "+${entry.totalCalories.toInt()} kcal",
+                text = formattedDate,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = dayOfWeek,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "总摄入 ${totalCalories} kcal",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
             )
         }
     }
 }
 
 @Composable
-fun EmptyState() {
+private fun EmptyState() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.DateRange,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
-            Text(
-                text = "这天还没有饮食记录",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "点击首页的 + 按钮添加食物",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-            )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(imageVector = Icons.Filled.DateRange, contentDescription = null)
+            Text(text = "今天还没有记录")
+            Text(text = "添加一条饮食记录开始统计")
         }
+    }
+}
+
+@Composable
+private fun FoodEntryCard(entry: Any) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Text(
+            text = entry.toString(),
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }

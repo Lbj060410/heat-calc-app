@@ -1,8 +1,11 @@
 package com.example.connects.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -14,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.padding
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -36,21 +38,9 @@ private data class BottomTab(
 )
 
 private val bottomTabs = listOf(
-    BottomTab(
-        screen = Screen.Home,
-        label = "首页",
-        icon = { Icon(Icons.Filled.Home, contentDescription = "首页") }
-    ),
-    BottomTab(
-        screen = Screen.Diary,
-        label = "日记",
-        icon = { Icon(Icons.Filled.DateRange, contentDescription = "日记") }
-    ),
-    BottomTab(
-        screen = Screen.Profile,
-        label = "我的",
-        icon = { Icon(Icons.Filled.Person, contentDescription = "我的") }
-    )
+    BottomTab(Screen.Home, "\u9996\u9875", { Icon(Icons.Filled.Home, contentDescription = "\u9996\u9875") }),
+    BottomTab(Screen.Diary, "\u65e5\u5fd7", { Icon(Icons.Filled.DateRange, contentDescription = "\u65e5\u5fd7") }),
+    BottomTab(Screen.Profile, "\u6211\u7684", { Icon(Icons.Filled.Person, contentDescription = "\u6211\u7684") })
 )
 
 @Composable
@@ -63,9 +53,7 @@ fun MainTabsScreen() {
         bottomBar = {
             NavigationBar {
                 bottomTabs.forEach { tab ->
-                    val selected = currentDestination
-                        ?.hierarchy
-                        ?.any { it.route == tab.screen.route } == true
+                    val selected = currentDestination?.hierarchy?.any { it.route == tab.screen.route } == true
 
                     NavigationBarItem(
                         selected = selected,
@@ -103,7 +91,10 @@ fun MainTabsScreen() {
             }
 
             composable(Screen.AI.route) {
-                PlaceholderPage("AI 功能开发中")
+                PlaceholderPage(
+                    title = "\u0041\u0049 \u529f\u80fd\u6682\u672a\u5f00\u653e",
+                    subtitle = "\u5f53\u524d\u7248\u672c\u5148\u4fdd\u7559\u5165\u53e3\uff0c\u540e\u7eed\u518d\u63a5\u5165\u667a\u80fd\u5efa\u8bae\u3002"
+                )
             }
 
             composable(Screen.Profile.route) {
@@ -115,11 +106,18 @@ fun MainTabsScreen() {
 }
 
 @Composable
-private fun PlaceholderPage(title: String) {
+private fun PlaceholderPage(
+    title: String,
+    subtitle: String
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "$title page is ready for implementation")
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(imageVector = Icons.Filled.Construction, contentDescription = null)
+            Text(text = title)
+            Text(text = subtitle)
+        }
     }
 }
