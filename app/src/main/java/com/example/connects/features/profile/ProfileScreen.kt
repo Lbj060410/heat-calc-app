@@ -58,15 +58,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import kotlin.math.ceil
-import kotlin.math.floor
+import com.example.connects.features.weight.WeightChartRange
+import com.example.connects.features.weight.WeightRecord
+import com.example.connects.features.weight.WeightTrendCard
 
 private val genderOptions = listOf(
     "male" to "男",
@@ -211,7 +208,6 @@ private fun ProfileLandingPage(
                 Text("记录体重")
             }
 
-            // 体重趋势图表（已从详情页移至此处）
             WeightTrendCard(
                 records = uiState.weightHistory,
                 selectedRange = uiState.selectedRange,
@@ -350,8 +346,6 @@ private fun ProfileDetailPage(
                     }
                 }
             }
-
-            // 注意：WeightTrendCard 已从详情页移除（现在只在首页显示）
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -539,231 +533,6 @@ private fun OptionDropdownField(
                         expanded = false
                     }
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun WeightTrendCard(
-    records: List<WeightRecord>,
-    selectedRange: WeightChartRange,
-    firstRecordDate: LocalDate?,
-    referenceWeight: Float,
-    onRangeChange: (WeightChartRange) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text("体重趋势", fontWeight = FontWeight.Bold)
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
-                    selected = selectedRange == WeightChartRange.MONTH,
-                    onClick = { onRangeChange(WeightChartRange.MONTH) },
-                    label = { Text("1月") }
-                )
-                FilterChip(
-                    selected = selectedRange == WeightChartRange.YEAR,
-                    onClick = { onRangeChange(WeightChartRange.YEAR) },
-                    label = { Text("1年") }
-                )
-                FilterChip(
-                    selected = selectedRange == WeightChartRange.ALL,
-                    onClick = { onRangeChange(WeightChartRange.ALL) },
-                    label = {
-                        val allLabel = if (firstRecordDate != null) {
-                            "自 ${firstRecordDate.year} 年起"
-                        } else {
-                            "全部"
-                        }
-                        Text(allLabel)
-                    }
-                )
-            }
-
-            WeightTrendChart(
-                records = records,
-                selectedRange = selectedRange,
-                firstRecordDate = firstRecordDate,
-                referenceWeight = referenceWeight
-            )
-
-            if (records.isEmpty()) {
-                Text(
-                    text = "暂无历史记录，后续记录将显示在坐标轴上。",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun WeightTrendChart(
-    records: List<WeightRecord>,
-    selectedRange: WeightChartRange,
-    firstRecordDate: LocalDate?,
-    referenceWeight: Float,
-    modifier: Modifier = Modifier
-) {
-    val textMeasurer = rememberTextMeasurer()
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val today = LocalDate.now()
-
-    val windowStart = when (selectedRange) {
-        WeightChartRange.MONTH -> today.minusMonths(1)
-        WeightChartRange.YEAR -> today.minusYears(1)
-        WeightChartRange.ALL -> firstRecordDate ?: today.minusMonths(1)
-    }
-    val windowEnd = today
-
-    val visibleRecords = records.filter { !it.date.isBefore(windowStart) && !it.date.isAfter(windowEnd) }
-
-    val minWeightRaw = visibleRecords.minOfOrNull { it.weight } ?: (referenceWeight - 5f)
-    val maxWeightRaw = visibleRecords.maxOfOrNull { it.weight } ?: (referenceWeight + 5f)
-    val minWeight = floor((minWeightRaw - 1f).toDouble()).toFloat()
-    val maxWeight = ceil((maxWeightRaw + 1f).toDouble()).toFloat()
-    val safeMaxWeight = if (maxWeight <= minWeight) minWeight + 1f else maxWeight
-
-    val totalDays = ChronoUnit.DAYS.between(windowStart, windowEnd).coerceAtLeast(1)
-
-    val xLabelFormatter = when (selectedRange) {
-        WeightChartRange.MONTH -> DateTimeFormatter.ofPattern("MM月dd日")
-        WeightChartRange.YEAR -> DateTimeFormatter.ofPattern("yyyy年MM月")
-        WeightChartRange.ALL -> DateTimeFormatter.ofPattern("yyyy年")
-    }
-
-    Canvas(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(360.dp)
-    ) {
-        val chartLeft = 52.dp.toPx()
-        val chartRight = size.width - 12.dp.toPx()
-        val chartTop = 16.dp.toPx()
-        val chartBottom = size.height - 34.dp.toPx()
-
-        val chartWidth = chartRight - chartLeft
-        val chartHeight = chartBottom - chartTop
-
-        drawLine(
-            color = Color.Gray,
-            start = Offset(chartLeft, chartTop),
-            end = Offset(chartLeft, chartBottom),
-            strokeWidth = 2f
-        )
-        drawLine(
-            color = Color.Gray,
-            start = Offset(chartLeft, chartBottom),
-            end = Offset(chartRight, chartBottom),
-            strokeWidth = 2f
-        )
-
-        val yTicks = 4
-        for (i in 0..yTicks) {
-            val fraction = i / yTicks.toFloat()
-            val y = chartBottom - chartHeight * fraction
-            val value = minWeight + (safeMaxWeight - minWeight) * fraction
-
-            drawLine(
-                color = Color.LightGray.copy(alpha = 0.5f),
-                start = Offset(chartLeft, y),
-                end = Offset(chartRight, y),
-                strokeWidth = 1f
-            )
-
-            drawText(
-                textMeasurer = textMeasurer,
-                text = String.format("%.1f", value),
-                style = TextStyle(fontSize = 10.sp, color = Color.Gray),
-                topLeft = Offset(4f, y - 10.dp.toPx())
-            )
-        }
-
-        val midDate = windowStart.plusDays(totalDays / 2)
-        val xLabelDates = listOf(windowStart, midDate, windowEnd)
-
-        xLabelDates.forEach { date ->
-            val daysFromStart = ChronoUnit.DAYS.between(windowStart, date).coerceAtLeast(0)
-            val x = chartLeft + (daysFromStart.toFloat() / totalDays.toFloat()) * chartWidth
-
-            drawLine(
-                color = Color.LightGray,
-                start = Offset(x, chartBottom),
-                end = Offset(x, chartBottom + 5.dp.toPx()),
-                strokeWidth = 1f
-            )
-
-            drawText(
-                textMeasurer = textMeasurer,
-                text = date.format(xLabelFormatter),
-                style = TextStyle(fontSize = 10.sp, color = Color.Gray),
-                topLeft = Offset(x - 18.dp.toPx(), chartBottom + 8.dp.toPx())
-            )
-        }
-
-        if (visibleRecords.isNotEmpty()) {
-            fun mapX(date: LocalDate): Float {
-                val daysFromStart = ChronoUnit.DAYS.between(windowStart, date)
-                    .coerceIn(0, totalDays)
-                return chartLeft + (daysFromStart.toFloat() / totalDays.toFloat()) * chartWidth
-            }
-
-            fun mapY(weight: Float): Float {
-                val ratio = (weight - minWeight) / (safeMaxWeight - minWeight)
-                return chartBottom - ratio * chartHeight
-            }
-
-            if (visibleRecords.size == 1) {
-                val point = visibleRecords.first()
-                drawCircle(
-                    color = primaryColor,
-                    radius = 5.dp.toPx(),
-                    center = Offset(mapX(point.date), mapY(point.weight))
-                )
-            } else {
-                val path = Path()
-                visibleRecords.forEachIndexed { index, record ->
-                    val x = mapX(record.date)
-                    val y = mapY(record.weight)
-                    if (index == 0) {
-                        path.moveTo(x, y)
-                    } else {
-                        path.lineTo(x, y)
-                    }
-                }
-
-                drawPath(
-                    path = path,
-                    color = primaryColor,
-                    style = Stroke(
-                        width = 3.dp.toPx(),
-                        cap = StrokeCap.Round,
-                        join = StrokeJoin.Round
-                    )
-                )
-
-                visibleRecords.forEach { record ->
-                    val x = mapX(record.date)
-                    val y = mapY(record.weight)
-                    drawCircle(
-                        color = primaryColor,
-                        radius = 4.dp.toPx(),
-                        center = Offset(x, y)
-                    )
-                    drawCircle(
-                        color = Color.White,
-                        radius = 2.dp.toPx(),
-                        center = Offset(x, y)
-                    )
-                }
             }
         }
     }

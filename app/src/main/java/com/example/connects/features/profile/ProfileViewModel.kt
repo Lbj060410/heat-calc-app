@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.connects.domain.model.UserProfile
 import com.example.connects.domain.repository.UserRepository
+import com.example.connects.features.weight.WeightChartRange
+import com.example.connects.features.weight.WeightRecord
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import kotlin.random.Random
@@ -12,17 +14,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-enum class WeightChartRange {
-    MONTH,
-    YEAR,
-    ALL
-}
-
-data class WeightRecord(
-    val date: LocalDate,
-    val weight: Float
-)
 
 data class ProfileUiState(
     val userProfile: UserProfile? = null,
@@ -151,12 +142,14 @@ class ProfileViewModel @Inject constructor(
 
         val today = LocalDate.now()
         val startDate = when (range) {
+            WeightChartRange.DAY -> today.minusDays(29)
+            WeightChartRange.WEEK -> today.minusWeeks(12)
             WeightChartRange.MONTH -> today.minusMonths(1)
             WeightChartRange.YEAR -> today.minusYears(1)
             WeightChartRange.ALL -> source.first().date
         }
 
-        return source.filter { !it.date.isBefore(startDate) }
+        return source.filter { !it.date.isBefore(startDate) && !it.date.isAfter(today) }
     }
 
     private fun resolveDisplayName(rawName: String): String {
