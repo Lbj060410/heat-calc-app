@@ -57,6 +57,26 @@ private val GENERIC_FOOD_NAME_KEYS = listOf(
     "营养", "成分", "项目", "顶目", "項目", "每100", "能量", "蛋白", "脂肪", "碳水",
     "膳食纤维", "营养素参考值", "nrv", "nutrition facts"
 )
+
+private val LEGACY_GARBLED_FOOD_NAME_MAP = mapOf(
+    "米饭" to "米饭",
+    "馒头" to "馒头",
+    "面条" to "面条",
+    "燕麦片" to "燕麦片",
+    "西兰花" to "西兰花",
+    "菠菜" to "菠菜",
+    "番茄" to "番茄",
+    "鸡胸肉" to "鸡胸肉",
+    "鸡蛋" to "鸡蛋",
+    "纯牛奶" to "纯牛奶",
+    "酸奶" to "酸奶",
+    "苹果" to "苹果",
+    "香蕉" to "香蕉",
+    "橙子" to "橙子",
+    "饼干" to "饼干",
+    "薯片" to "薯片",
+    "黑巧克力" to "黑巧克力"
+)
 private data class NumericToken(
     val value: Float,
     val unit: String,
@@ -974,7 +994,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun decodeGarbledText(value: String): String {
-        return value
+        if (value.isBlank()) return value
+        return LEGACY_GARBLED_FOOD_NAME_MAP[value] ?: value
     }
 
     private fun presetFoods(): List<FoodItem> {
