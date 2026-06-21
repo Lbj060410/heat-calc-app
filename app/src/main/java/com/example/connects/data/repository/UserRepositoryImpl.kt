@@ -1,17 +1,23 @@
 package com.example.connects.data.repository
 
+import com.example.connects.core.database.dao.UserWeightLogDao
+import com.example.connects.core.database.entity.UserWeightLogEntity
 import com.example.connects.core.datastore.UserPreferences
 import com.example.connects.data.mapper.UserProfileMapper
 import com.example.connects.domain.model.UserProfile
+import com.example.connects.domain.model.WeightLogEntry
 import com.example.connects.domain.repository.UserRepository
 import com.example.connects.domain.usecase.CalculateBmrUseCase
 import com.example.connects.domain.usecase.CalculateTdeeUseCase
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
     private val userPreferences: UserPreferences,
+    private val userWeightLogDao: UserWeightLogDao,
     private val userProfileMapper: UserProfileMapper,
     private val calculateBmrUseCase: CalculateBmrUseCase,
     private val calculateTdeeUseCase: CalculateTdeeUseCase
@@ -58,6 +64,33 @@ class UserRepositoryImpl @Inject constructor(
 
     override fun getDailyCalorieTarget(): Flow<Int> {
         return userPreferences.dailyCaloricTarget
+    }
+
+    override fun getWeightHistory(): Flow<List<WeightLogEntry>> {
+        return userWeightLogDao.getAllLogsAsc().map { logs ->
+            logs.map { log ->
+                WeightLogEntry(
+                    date = LocalDate.ofEpochDay(log.dateEpochDay.toLong()),
+                    weightKg = log.weightKg
+                )
+            }
+        }
+    }
+
+    override suspend fun recordWeight(weightKg: Float) {
+        val todayEpochDay = LocalDate.now().toEpochDay().toInt()
+        val existingLog = userWeightLogDao.getByDate(todayEpochDay)
+        if (existingLog == null) {
+            userWeightLogDao.insert(
+                UserWeightLogEntity(
+                    weightKg = weightKg,
+                    dateEpochDay = todayEpochDay
+                )
+            )
+        } else if (existingLog.weightKg != weightKg) {
+            userWeightLogDao.update(existingLog.copy(weightKg = weightKg))
+        }
+        userPreferences.updateUserWeight(weightKg)
     }
 
     override suspend fun calculateAndSaveDailyTarget(

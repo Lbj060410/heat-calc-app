@@ -2,8 +2,6 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.connects.core.database.dao.UserWeightLogDao
-import com.example.connects.core.database.entity.UserWeightLogEntity
 import com.example.connects.domain.model.UserProfile
 import com.example.connects.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,8 +36,7 @@ data class ProfileUiState(
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository,
-    private val userWeightLogDao: UserWeightLogDao
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -76,10 +73,10 @@ class ProfileViewModel @Inject constructor(
     private fun observeWeightHistory() {
         viewModelScope.launch {
             try {
-                userWeightLogDao.getAllLogsAsc().collect { logs ->
+                userRepository.getWeightHistory().collect { logs ->
                     allWeightHistory = logs.map { log ->
                         WeightRecord(
-                            date = LocalDate.ofEpochDay(log.dateEpochDay.toLong()),
+                            date = log.date,
                             weight = log.weightKg
                         )
                     }
@@ -131,7 +128,7 @@ class ProfileViewModel @Inject constructor(
                 )
 
                 userRepository.updateUserProfile(updatedProfile)
-                upsertTodayWeightLog(currentWeight)
+                userRepository.recordWeight(currentWeight)
 
                 _uiState.value = _uiState.value.copy(
                     userProfile = updatedProfile,
@@ -143,21 +140,6 @@ class ProfileViewModel @Inject constructor(
                     error = e.message ?: "Failed to update profile"
                 )
             }
-        }
-    }
-
-    private suspend fun upsertTodayWeightLog(weightKg: Float) {
-        val todayEpochDay = LocalDate.now().toEpochDay().toInt()
-        val existingLog = userWeightLogDao.getByDate(todayEpochDay)
-        if (existingLog == null) {
-            userWeightLogDao.insert(
-                UserWeightLogEntity(
-                    weightKg = weightKg,
-                    dateEpochDay = todayEpochDay
-                )
-            )
-        } else if (existingLog.weightKg != weightKg) {
-            userWeightLogDao.update(existingLog.copy(weightKg = weightKg))
         }
     }
 
