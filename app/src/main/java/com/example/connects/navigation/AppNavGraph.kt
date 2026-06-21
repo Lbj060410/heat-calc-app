@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.connects.features.onboarding.OnboardingScreen
 import com.example.connects.features.onboarding.OnboardingViewModel
+import com.example.connects.features.weight.WeightRecordScreen
 
 @Composable
 fun AppNavGraph(
@@ -31,6 +32,12 @@ fun AppNavGraph(
 
         composable(Screen.MainTabs.route) {
             MainTabsScreen()
+        }
+
+        composable(Screen.WeightRecord.route) {
+            WeightRecordScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

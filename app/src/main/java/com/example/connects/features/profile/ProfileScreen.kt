@@ -91,6 +91,14 @@ private val activityOptions = listOf(
 fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     var showDetailPage by rememberSaveable { mutableStateOf(false) }
+    var showWeightRecordPage by rememberSaveable { mutableStateOf(false) }
+
+    if (showWeightRecordPage) {
+        WeightRecordEntryPage(
+            onBack = { showWeightRecordPage = false }
+        )
+        return
+    }
 
     if (showDetailPage) {
         ProfileDetailPage(
@@ -115,6 +123,7 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
         ProfileLandingPage(
             uiState = uiState,
             onOpenDetails = { showDetailPage = true },
+            onOpenWeightRecord = { showWeightRecordPage = true },
             onRangeChange = viewModel::selectChartRange
         )
     }
@@ -125,6 +134,7 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
 private fun ProfileLandingPage(
     uiState: ProfileUiState,
     onOpenDetails: () -> Unit,
+    onOpenWeightRecord: () -> Unit,
     onRangeChange: (WeightChartRange) -> Unit
 ) {
     Scaffold(
@@ -194,6 +204,13 @@ private fun ProfileLandingPage(
                 }
             }
 
+            Button(
+                onClick = onOpenWeightRecord,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("记录体重")
+            }
+
             // 体重趋势图表（已从详情页移至此处）
             WeightTrendCard(
                 records = uiState.weightHistory,
@@ -204,6 +221,17 @@ private fun ProfileLandingPage(
             )
         }
     }
+}
+
+@Composable
+private fun WeightRecordEntryPage(
+    onBack: () -> Unit
+) {
+    val viewModel: com.example.connects.features.weight.WeightViewModel = hiltViewModel()
+    com.example.connects.features.weight.WeightRecordScreen(
+        onBack = onBack,
+        viewModel = viewModel
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
