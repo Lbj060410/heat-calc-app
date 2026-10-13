@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.connects.domain.model.FoodCategory
+import kotlin.math.roundToInt
 
 private data class FoodCategoryTab(val key: String, val label: String)
 
@@ -223,7 +224,7 @@ fun FoodPickerScreen(
 
     selectedFood?.let { food ->
         PortionDialog(
-            title = food.name,
+            food = food,
             onDismiss = { selectedFood = null },
             onConfirm = { grams ->
                 viewModel.addFoodEntryFromQuickItem(food, grams, uiState.mealType)
@@ -247,11 +248,12 @@ fun FoodPickerScreen(
 
 @Composable
 private fun PortionDialog(
-    title: String,
+    food: HomeViewModel.QuickFoodItem,
     onDismiss: () -> Unit,
     onConfirm: (Float) -> Unit
 ) {
     var gramsText by remember { mutableStateOf("100") }
+    val grams = gramsText.toFloatOrNull() ?: 0f
 
     Dialog(onDismissRequest = onDismiss) {
         Card(modifier = Modifier.padding(16.dp)) {
@@ -260,24 +262,33 @@ private fun PortionDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text("输入食用分量", fontWeight = FontWeight.Bold)
-                Text(title, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = "${food.name} · ${food.caloriesPer100g.roundToInt()} kcal/100g",
+                    style = MaterialTheme.typography.bodySmall
+                )
                 OutlinedTextField(
                     value = gramsText,
                     onValueChange = { gramsText = it },
                     singleLine = true,
                     label = { Text("克数(g)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    // 允许小数，改吃 150.5 g 也能填
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                 )
+                if (grams > 0f) {
+                    Text(
+                        text = "≈ ${(food.caloriesPer100g * grams / 100f).roundToInt()} kcal",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
                     OutlinedButton(onClick = onDismiss) { Text("取消") }
                     Button(
-                        onClick = {
-                            val grams = gramsText.toFloatOrNull() ?: 0f
-                            if (grams > 0f) onConfirm(grams)
-                        }
+                        onClick = { if (grams > 0f) onConfirm(grams) },
+                        enabled = grams > 0f
                     ) {
                         Text("确定")
                     }
@@ -298,7 +309,6 @@ private fun EditCustomFoodDialog(
     var protein by remember(initial.id) { mutableStateOf(initial.proteinPer100g.toString()) }
     var carbs by remember(initial.id) { mutableStateOf(initial.carbsPer100g.toString()) }
     var fat by remember(initial.id) { mutableStateOf(initial.fatPer100g.toString()) }
-    var fiber by remember(initial.id) { mutableStateOf(initial.fiberPer100g.toString()) }
     var sodium by remember(initial.id) { mutableStateOf(initial.sodiumPer100g.toString()) }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -336,12 +346,6 @@ private fun EditCustomFoodDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                 )
                 OutlinedTextField(
-                    value = fiber,
-                    onValueChange = { fiber = it },
-                    label = { Text("纤维/100g") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                )
-                OutlinedTextField(
                     value = sodium,
                     onValueChange = { sodium = it },
                     label = { Text("钠/100g") },
@@ -364,7 +368,6 @@ private fun EditCustomFoodDialog(
                                     proteinPer100g = protein.toFloatOrNull() ?: 0f,
                                     carbsPer100g = carbs.toFloatOrNull() ?: 0f,
                                     fatPer100g = fat.toFloatOrNull() ?: 0f,
-                                    fiberPer100g = fiber.toFloatOrNull() ?: 0f,
                                     sodiumPer100g = sodium.toFloatOrNull() ?: 0f
                                 )
                             )

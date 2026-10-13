@@ -14,12 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -42,7 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.connects.domain.model.FoodEntry
+import com.example.connects.domain.model.MealType
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -52,6 +51,22 @@ fun DiaryScreen(
     viewModel: DiaryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var openedMeal by remember { mutableStateOf<MealType?>(null) }
+
+    // 点某餐进入详情页。沿用首页 FoodPickerScreen 的做法：在同一个 Compose 树里整屏替换，
+    // 不新开导航路由，DiaryViewModel 实例也保持不变，返回时日历和选中日期都还在。
+    val meal = openedMeal
+    if (meal != null) {
+        val group = uiState.groups.firstOrNull { it.mealType == meal }
+        MealDetailScreen(
+            mealType = meal,
+            entries = group?.entries.orEmpty(),
+            totalCalories = group?.totalCalories ?: 0,
+            onBack = { openedMeal = null },
+            onDelete = { viewModel.deleteEntry(it) }
+        )
+        return
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -81,7 +96,7 @@ fun DiaryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
                 CalendarPicker(
@@ -98,17 +113,81 @@ fun DiaryScreen(
                 )
             }
 
-            if (uiState.foodEntries.isEmpty()) {
-                item { EmptyState() }
-            } else {
-                items(uiState.foodEntries) { entry ->
-                    FoodEntryCard(entry = entry)
+            uiState.error?.let { message ->
+                item {
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+
+            // 四餐固定顺序各一张入口卡，点进去看这一餐的记录
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    uiState.groups.forEach { group ->
+                        MealEntryCard(
+                            group = group,
+                            onClick = { openedMeal = group.mealType }
+                        )
+                    }
+                }
+            }
+
+            if (uiState.isEmpty) {
+                item {
+                    Text(
+                        text = "这一天还没有记录，去首页添加。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                 }
             }
 
             item {
                 Spacer(modifier = Modifier.height(16.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun MealEntryCard(group: DiaryMealGroup, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 14.dp, bottom = 14.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = group.mealType.label,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = "${group.totalCalories} kcal · ${group.entries.size} 项",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -284,38 +363,6 @@ private fun DateHeader(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-        }
-    }
-}
-
-@Composable
-private fun EmptyState() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(imageVector = Icons.Filled.DateRange, contentDescription = null)
-            Text(text = "今天还没有记录")
-            Text(text = "添加一条饮食记录开始统计。")
-        }
-    }
-}
-
-@Composable
-private fun FoodEntryCard(entry: FoodEntry) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(text = entry.foodName, fontWeight = FontWeight.Bold)
-            Text(text = "${entry.amountGrams.toInt()} g · ${entry.mealType}")
-            Text(text = "${entry.totalCalories.toInt()} kcal", color = MaterialTheme.colorScheme.primary)
         }
     }
 }

@@ -15,6 +15,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,6 +32,8 @@ import com.example.connects.features.home.HomeScreen
 import com.example.connects.features.home.HomeViewModel
 import com.example.connects.features.profile.ProfileScreen
 import com.example.connects.features.profile.ProfileViewModel
+import com.example.connects.features.dailyrecord.DailyRecordDialog
+import com.example.connects.features.dailyrecord.DailyRecordViewModel
 
 private data class BottomTab(
     val screen: Screen,
@@ -48,6 +52,17 @@ fun MainTabsScreen() {
     val tabNavController = rememberNavController()
     val backStackEntry = tabNavController.currentBackStackEntryAsState().value
     val currentDestination = backStackEntry?.destination
+
+    // 进入应用先补齐必填记录：体重每天一次，腰围每 15 天一次。
+    // 有任一项到期就一直显示不可关闭的弹窗；用户点「跳过」只跳过本次会话。
+    val dailyRecordViewModel: DailyRecordViewModel = hiltViewModel()
+    val needsWeightInput by dailyRecordViewModel.needsWeightInput.collectAsState()
+    val needsWaistInput by dailyRecordViewModel.needsWaistInput.collectAsState()
+    val isRecordSkipped by dailyRecordViewModel.isSkipped.collectAsState()
+
+    if (!isRecordSkipped && (needsWeightInput == true || needsWaistInput == true)) {
+        DailyRecordDialog(viewModel = dailyRecordViewModel)
+    }
 
     Scaffold(
         bottomBar = {

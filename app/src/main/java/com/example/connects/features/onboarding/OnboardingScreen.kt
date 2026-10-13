@@ -31,12 +31,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.connects.R
+import com.example.connects.domain.model.ActivityAudience
 import com.example.connects.domain.model.ActivityLevel
 import kotlinx.coroutines.launch
 
@@ -46,7 +49,7 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     onFinished: () -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { 5 })
+    val pagerState = rememberPagerState(pageCount = { 6 })
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -58,7 +61,7 @@ fun OnboardingScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LinearProgressIndicator(
-                progress = { (pagerState.currentPage + 1) / 5f },
+                progress = { (pagerState.currentPage + 1) / 6f },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
@@ -76,12 +79,11 @@ fun OnboardingScreen(
                 userScrollEnabled = false
             ) { page ->
                 when (page) {
-                    0 -> InputStepPage(
-                        title = "请填写身高",
-                        unit = "cm",
-                        value = viewModel.heightInput,
-                        onValueChange = { viewModel.updateHeight(it) },
-                        placeholder = "例如 175"
+                    0 -> HeightWaistStepPage(
+                        height = viewModel.heightInput,
+                        onHeightChange = { viewModel.updateHeight(it) },
+                        waist = viewModel.waistInput,
+                        onWaistChange = { viewModel.updateWaist(it) }
                     )
                     1 -> InputStepPage(
                         title = "请填写体重",
@@ -97,11 +99,15 @@ fun OnboardingScreen(
                         onValueChange = { viewModel.updateAge(it) },
                         placeholder = "例如 25"
                     )
-                    3 -> ActivityLevelStepPage(
+                    3 -> GenderStepPage(
+                        selectedValue = viewModel.genderInput,
+                        onValueSelected = { viewModel.updateGender(it) }
+                    )
+                    4 -> ActivityLevelStepPage(
                         selectedValue = viewModel.selectedActivityLevel,
                         onValueSelected = { viewModel.updateActivityLevel(it) }
                     )
-                    4 -> TargetStepPage(
+                    5 -> TargetStepPage(
                         selectedValue = viewModel.selectedGoal,
                         onValueSelected = { viewModel.updateGoal(it) }
                     )
@@ -112,7 +118,7 @@ fun OnboardingScreen(
 
             Button(
                 onClick = {
-                    if (pagerState.currentPage < 4) {
+                    if (pagerState.currentPage < 5) {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
@@ -127,12 +133,64 @@ fun OnboardingScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = if (pagerState.currentPage == 4) "完成并进入应用" else "下一步",
+                    text = if (pagerState.currentPage == 5) "完成并进入应用" else "下一步",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
         }
+    }
+}
+
+/**
+ * 身高 + 腰围放在同一页。
+ *
+ * 腰围是身体状态判断里区分「长脂肪还是长肌肉」的关键信号，必须在引导阶段就拿到基线，
+ * 否则第一个 15 天周期结算时没有可对比的腰围。
+ */
+@Composable
+fun HeightWaistStepPage(
+    height: String,
+    onHeightChange: (String) -> Unit,
+    waist: String,
+    onWaistChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "请填写身高和腰围", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(32.dp))
+
+        OutlinedTextField(
+            value = height,
+            onValueChange = onHeightChange,
+            modifier = Modifier.fillMaxWidth(0.7f),
+            label = { Text("身高") },
+            trailingIcon = { Text("cm", fontWeight = FontWeight.Bold) },
+            placeholder = { Text("例如 175", color = Color.Gray) },
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 20.sp),
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = waist,
+            onValueChange = onWaistChange,
+            modifier = Modifier.fillMaxWidth(0.7f),
+            label = { Text("腰围") },
+            trailingIcon = { Text("cm", fontWeight = FontWeight.Bold) },
+            placeholder = { Text("例如 80", color = Color.Gray) },
+            supportingText = { Text(stringResource(R.string.waist_measure_hint)) },
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            singleLine = true,
+            textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 20.sp),
+            shape = RoundedCornerShape(12.dp)
+        )
     }
 }
 
@@ -167,6 +225,57 @@ fun InputStepPage(
 }
 
 @Composable
+fun GenderStepPage(
+    selectedValue: String,
+    onValueSelected: (String) -> Unit
+) {
+    // 性别直接决定 BMR 公式（男 +5 / 女 -161），必须让用户选，不能默认成男性。
+    val options = listOf("male" to "男", "female" to "女")
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "请选择你的性别", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(32.dp))
+
+        options.forEach { (value, label) ->
+            val isSelected = selectedValue == value
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .padding(vertical = 8.dp)
+                    .clickable { onValueSelected(value) },
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isSelected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    }
+                ),
+                shape = RoundedCornerShape(16.dp),
+                border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+            ) {
+                Text(
+                    text = label,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isSelected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun ActivityLevelStepPage(
     selectedValue: ActivityLevel,
     onValueSelected: (ActivityLevel) -> Unit
@@ -180,60 +289,72 @@ fun ActivityLevelStepPage(
         Spacer(modifier = Modifier.height(24.dp))
         Text(text = "请选择你的活动水平", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Text(
-            text = "这个选项会影响每日热量目标，尽量选择最接近真实情况的一项。",
+            text = "分健身人群和大众两类，选最接近真实情况的一项；这个选项会直接影响每日热量目标。",
             fontSize = 14.sp,
             color = Color.Gray,
-            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp, bottom = 20.dp)
         )
 
-        ActivityLevel.entries.forEach { level ->
-            val isSelected = selectedValue == level
-            Card(
+        ActivityAudience.entries.forEach { audience ->
+            Text(
+                text = audience.label,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp)
-                    .clickable { onValueSelected(level) },
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isSelected) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    }
-                ),
-                shape = RoundedCornerShape(16.dp),
-                border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
-            ) {
-                Row(
+                    .padding(top = 12.dp, bottom = 6.dp)
+            )
+            ActivityLevel.forAudience(audience).forEach { level ->
+                val isSelected = selectedValue == level
+                Card(
                     modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                        .clickable { onValueSelected(level) },
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isSelected) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        }
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = level.label,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            }
-                        )
-                        Text(
-                            text = level.description,
-                            fontSize = 12.sp,
-                            color = if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            } else {
-                                Color.Gray
-                            }
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = level.label,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                }
+                            )
+                            Text(
+                                text = level.description,
+                                fontSize = 12.sp,
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                } else {
+                                    Color.Gray
+                                }
+                            )
+                        }
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { onValueSelected(level) }
                         )
                     }
-                    RadioButton(
-                        selected = isSelected,
-                        onClick = { onValueSelected(level) }
-                    )
                 }
             }
         }

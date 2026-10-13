@@ -1,9 +1,5 @@
 ﻿package com.example.connects.features.home
 
-import android.content.Intent
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,11 +29,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private const val MEAL_BREAKFAST = "早餐"
-private const val MEAL_LUNCH = "午餐"
-private const val MEAL_DINNER = "晚餐"
-private const val MEAL_SNACK = "加餐"
+import com.example.connects.domain.model.MealType
 
 @Suppress("UNUSED_PARAMETER")
 @Composable
@@ -47,113 +38,20 @@ fun HomeScreen(
     onNavigateToSearch: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val pickerState by viewModel.foodPickerUiState.collectAsState()
     var showCustomAddDialog by remember { mutableStateOf(false) }
-    var scannedNutritionData by remember { mutableStateOf<ScannedNutritionData?>(null) }
-    var scannedRowCount by remember { mutableStateOf(0) }
-    var scannedColCount by remember { mutableStateOf(0) }
-    var scannedTableJson by remember { mutableStateOf<String?>(null) }
-    var pendingParsedData by remember { mutableStateOf<ScannedNutritionData?>(null) }
-    var showScanConfirmDialog by remember { mutableStateOf(false) }
-    var selectedMealType by remember { mutableStateOf(MEAL_BREAKFAST) }
+    var selectedMealType by remember { mutableStateOf(MealType.BREAKFAST.label) }
     var showFoodPicker by remember { mutableStateOf(false) }
-
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK) {
-            val scannedText = result.data?.getStringExtra("scanned_text")
-            scannedRowCount = result.data?.getIntExtra("scanned_rows", 0) ?: 0
-            scannedColCount = result.data?.getIntExtra("scanned_cols", 0) ?: 0
-            scannedTableJson = result.data?.getStringExtra("scanned_table_json")
-
-            if (!scannedText.isNullOrEmpty()) {
-                viewModel.parseNutritionLabel(scannedText) { parsedData ->
-                    if (parsedData.confidence < 0.55f || parsedData.warnings.isNotEmpty()) {
-                        pendingParsedData = parsedData
-                        showScanConfirmDialog = true
-                    } else {
-                        scannedNutritionData = parsedData
-                        showCustomAddDialog = true
-                    }
-                }
-                if (scannedRowCount > 0 && scannedColCount > 0) {
-                    Toast.makeText(
-                        context,
-                        "识别到表格：${scannedRowCount}行 ${scannedColCount}列",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else if (!scannedTableJson.isNullOrEmpty()) {
-                    Toast.makeText(context, "已捕获表格结构", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(context, "扫描失败，未识别到文本", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
 
     if (showCustomAddDialog) {
         AddFoodDialog(
+            knownFoods = pickerState.allFoods,
             onDismiss = {
                 showCustomAddDialog = false
-                scannedNutritionData = null
-                pendingParsedData = null
-                showScanConfirmDialog = false
-                scannedRowCount = 0
-                scannedColCount = 0
-                scannedTableJson = null
             },
             onSave = { data ->
                 viewModel.addCustomFoodAndEntry(data, selectedMealType)
                 showCustomAddDialog = false
-                scannedNutritionData = null
-                pendingParsedData = null
-                showScanConfirmDialog = false
-                scannedRowCount = 0
-                scannedColCount = 0
-                scannedTableJson = null
-            },
-            onScanClick = {
-                val intent = Intent(context, CameraScanActivity::class.java)
-                cameraLauncher.launch(intent)
-            },
-            initialData = scannedNutritionData
-        )
-    }
-
-    if (showScanConfirmDialog && pendingParsedData != null) {
-        AlertDialog(
-            onDismissRequest = {
-                showScanConfirmDialog = false
-                pendingParsedData = null
-            },
-            title = { Text("识别结果请确认") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("置信度：${(pendingParsedData!!.confidence * 100).toInt()}%")
-                    pendingParsedData!!.warnings.forEach { warn ->
-                        Text("• $warn")
-                    }
-                    Text("是否继续并进入编辑页面？")
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        scannedNutritionData = pendingParsedData
-                        pendingParsedData = null
-                        showScanConfirmDialog = false
-                        showCustomAddDialog = true
-                    }
-                ) { Text("继续") }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        pendingParsedData = null
-                        showScanConfirmDialog = false
-                    }
-                ) { Text("取消") }
             }
         )
     }
@@ -215,7 +113,6 @@ fun HomeScreen(
                         NutrientBar(label = "碳水", state = uiState.carbs)
                         NutrientBar(label = "蛋白质", state = uiState.protein)
                         NutrientBar(label = "脂肪", state = uiState.fat)
-                        NutrientBar(label = "膳食纤维", state = uiState.fiber)
                         NutrientBar(label = "钠", state = uiState.sodium, unit = "mg")
                     }
                 }

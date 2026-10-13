@@ -45,7 +45,7 @@ interface FoodItemDao {
     @Query("UPDATE food_items SET isFavorite = :isFavorite WHERE id = :id")
     suspend fun updateFavorite(id: Long, isFavorite: Boolean)
 
-    @Query("UPDATE food_items SET name = :name, category = :category, caloriesPer100g = :caloriesPer100g, proteinPer100g = :proteinPer100g, carbsPer100g = :carbsPer100g, fatPer100g = :fatPer100g, fiberPer100g = :fiberPer100g, sodiumPer100g = :sodiumPer100g WHERE id = :id")
+    @Query("UPDATE food_items SET name = :name, category = :category, caloriesPer100g = :caloriesPer100g, proteinPer100g = :proteinPer100g, carbsPer100g = :carbsPer100g, fatPer100g = :fatPer100g, sodiumPer100g = :sodiumPer100g WHERE id = :id")
     suspend fun updateFoodFields(
         id: Long,
         name: String,
@@ -54,7 +54,6 @@ interface FoodItemDao {
         proteinPer100g: Float,
         carbsPer100g: Float,
         fatPer100g: Float,
-        fiberPer100g: Float,
         sodiumPer100g: Float
     )
 

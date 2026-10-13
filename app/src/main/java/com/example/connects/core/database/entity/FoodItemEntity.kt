@@ -12,7 +12,6 @@ data class FoodItemEntity(
     val proteinPer100g: Float,
     val carbsPer100g: Float,
     val fatPer100g: Float,
-    val fiberPer100g: Float = 0f,
     val sodiumPer100g: Float = 0f,
     val isCustom: Boolean = false,
     val isFavorite: Boolean = false,

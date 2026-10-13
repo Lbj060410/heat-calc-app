@@ -65,7 +65,6 @@ class FoodRepositoryImpl @Inject constructor(
             proteinPer100g = foodItem.proteinPer100g,
             carbsPer100g = foodItem.carbsPer100g,
             fatPer100g = foodItem.fatPer100g,
-            fiberPer100g = foodItem.fiberPer100g,
             sodiumPer100g = foodItem.sodiumPer100g
         )
     }

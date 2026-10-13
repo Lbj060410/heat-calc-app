@@ -9,7 +9,6 @@ data class FoodEntry(
     val totalProtein: Float = 0f,
     val totalCarbs: Float = 0f,
     val totalFat: Float = 0f,
-    val totalFiber: Float = 0f,
     val sodium: Float = 0f,
     val mealType: String,
     val dateEpochDay: Int,

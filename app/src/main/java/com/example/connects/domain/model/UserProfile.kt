@@ -7,6 +7,6 @@ data class UserProfile(
     val weightKg: Float,
     val age: Int,
     val goal: String,                      // "lose" / "gain" / "maintain"
-    val activityLevel: String,             // "sedentary" / "light" / "moderate" / "active" / "very_active"
+    val activityLevel: String,             // ActivityLevel.storageKey，如 "sedentary" / "lightly_active"
     val dailyCaloricTarget: Int
 )

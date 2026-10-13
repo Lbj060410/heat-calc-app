@@ -24,17 +24,9 @@ data class FoodEntryEntity(
     val totalProtein: Float = 0f,
     val totalCarbs: Float = 0f,
     val totalFat: Float = 0f,
-    val totalFiber: Float = 0f,
     val sodium: Float = 0f,
     val mealType: String,
     val dateEpochDay: Int,
     val createdAt: Long = System.currentTimeMillis(),
     val note: String = ""
-) {
-    companion object {
-        const val MEAL_TYPE_BREAKFAST = "早餐"
-        const val MEAL_TYPE_LUNCH = "午餐"
-        const val MEAL_TYPE_DINNER = "晚餐"
-        const val MEAL_TYPE_SNACK = "加餐"
-    }
-}
+)
