@@ -17,3 +17,4 @@ local.properties
 .kotlin
 build_output.txt
 ui_preview.html
+dist/
