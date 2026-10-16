@@ -1,7 +1,10 @@
-﻿package com.example.connects.features.profile
+package com.example.connects.features.profile
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.connects.core.datastore.UserPreferences
 import com.example.connects.core.util.todayEpochDayFlow
 import com.example.connects.domain.model.ActivityLevel
 import com.example.connects.domain.model.BodyStatusSettlement
@@ -20,7 +23,9 @@ import com.example.connects.domain.usecase.CalculateMacroTargetsUseCase
 import com.example.connects.domain.usecase.CalculateTdeeUseCase
 import com.example.connects.domain.usecase.RefreshBodyStatusUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlin.random.Random
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +34,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -43,13 +49,17 @@ data class ProfileUiState(
     val isAdaptiveTarget: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val isEditing: Boolean = false
+    val isEditing: Boolean = false,
+    /** 本地头像文件路径；没设置过照片时为 null，界面退回印章头像。 */
+    val avatarPath: String? = null
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val userRepository: UserRepository,
+    private val userPreferences: UserPreferences,
     private val foodRepository: FoodRepository,
     private val calculateDailyCalorieTargetUseCase: CalculateDailyCalorieTargetUseCase,
     private val calculateBodyStatusUseCase: CalculateBodyStatusUseCase,
@@ -64,6 +74,16 @@ class ProfileViewModel @Inject constructor(
 
     init {
         observeUserProfile()
+        observeAvatar()
+    }
+
+    /** 头像路径单独收集：换头像不必重算整个资料页的数据流。 */
+    private fun observeAvatar() {
+        viewModelScope.launch {
+            userPreferences.avatarUri.collect { path ->
+                _uiState.value = _uiState.value.copy(avatarPath = path)
+            }
+        }
     }
 
     private fun observeUserProfile() {
@@ -291,6 +311,46 @@ class ProfileViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    /**
+     * 把相册选中的图复制进应用私有目录再记路径。
+     * 相册 URI 是一次性授权，重启后失效，必须立刻落成自己的文件。
+     */
+    fun saveAvatar(uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val dir = File(context.filesDir, "avatars").apply { mkdirs() }
+                val previous = _uiState.value.avatarPath
+                // 文件名带时间戳，保证换图后 Coil 不会拿旧图的缓存凑数。
+                val target = File(dir, "avatar_${System.currentTimeMillis()}.jpg")
+                val input = context.contentResolver.openInputStream(uri)
+                if (input == null) {
+                    _uiState.value = _uiState.value.copy(error = "无法读取所选图片")
+                    return@launch
+                }
+                input.use { source ->
+                    target.outputStream().use { output -> source.copyTo(output) }
+                }
+                userPreferences.updateAvatarUri(target.absolutePath)
+                // 新图落盘成功后再清旧文件，中途失败也不会丢头像。
+                previous?.let { old ->
+                    File(old).takeIf { it.parentFile?.name == "avatars" }?.delete()
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = e.message ?: "头像保存失败")
+            }
+        }
+    }
+
+    /** 移除头像：删文件并清掉记录，界面退回印章。 */
+    fun clearAvatar() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.value.avatarPath?.let { path ->
+                File(path).takeIf { it.parentFile?.name == "avatars" }?.delete()
+            }
+            userPreferences.updateAvatarUri(null)
+        }
     }
 
     companion object {

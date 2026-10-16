@@ -8,13 +8,17 @@ import com.example.connects.domain.model.MacroTargets
 import com.example.connects.domain.model.UserProfile
 import com.example.connects.domain.model.UserWaistLog
 import com.example.connects.domain.model.UserWeightLog
+import com.example.connects.domain.model.WeightMeasurementContext
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     fun getUserProfile(): Flow<UserProfile>
     suspend fun updateUserProfile(userProfile: UserProfile)
     fun getDailyCalorieTarget(): Flow<Int>
-    suspend fun recordWeight(weightKg: Float)
+    suspend fun recordWeight(
+        weightKg: Float,
+        measurementContext: WeightMeasurementContext = WeightMeasurementContext.MORNING_FASTING
+    )
 
     /** 指定日期是否已记录体重，用于每天首次进入应用时的体重弹窗。 */
     fun observeHasWeightLog(dateEpochDay: Int): Flow<Boolean>

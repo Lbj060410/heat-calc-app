@@ -17,6 +17,7 @@ import com.example.connects.domain.model.MacroTargets
 import com.example.connects.domain.model.UserProfile
 import com.example.connects.domain.model.UserWaistLog
 import com.example.connects.domain.model.UserWeightLog
+import com.example.connects.domain.model.WeightMeasurementContext
 import com.example.connects.domain.repository.UserRepository
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
@@ -82,20 +83,27 @@ class UserRepositoryImpl @Inject constructor(
         return userPreferences.dailyCaloricTarget
     }
 
-    override suspend fun recordWeight(weightKg: Float) {
+    override suspend fun recordWeight(
+        weightKg: Float,
+        measurementContext: WeightMeasurementContext
+    ) {
         val todayEpochDay = LocalDate.now().toEpochDay().toInt()
         // 第一次记录体重就是「正式记录的第一天」，自适应引擎的第一个月从这里开始。
         userPreferences.setFirstRecordDayIfAbsent(todayEpochDay)
+        val context = measurementContext.storageKey
         val existingLog = userWeightLogDao.getByDate(todayEpochDay)
         if (existingLog == null) {
             userWeightLogDao.insert(
                 UserWeightLogEntity(
                     weightKg = weightKg,
-                    dateEpochDay = todayEpochDay
+                    dateEpochDay = todayEpochDay,
+                    measurementContext = context
                 )
             )
-        } else if (existingLog.weightKg != weightKg) {
-            userWeightLogDao.update(existingLog.copy(weightKg = weightKg))
+        } else if (existingLog.weightKg != weightKg || existingLog.measurementContext != context) {
+            userWeightLogDao.update(
+                existingLog.copy(weightKg = weightKg, measurementContext = context)
+            )
         }
         userPreferences.updateUserWeight(weightKg)
     }

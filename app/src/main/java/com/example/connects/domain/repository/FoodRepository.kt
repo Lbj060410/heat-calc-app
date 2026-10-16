@@ -1,4 +1,4 @@
-﻿package com.example.connects.domain.repository
+package com.example.connects.domain.repository
 
 import com.example.connects.domain.model.FoodEntry
 import com.example.connects.domain.model.FoodItem

@@ -3,6 +3,7 @@ package com.example.connects.features.dailyrecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.connects.core.util.todayEpochDayFlow
+import com.example.connects.domain.model.WeightMeasurementContext
 import com.example.connects.domain.repository.UserRepository
 import com.example.connects.domain.usecase.CalculateBodyStatusUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +19,9 @@ import javax.inject.Inject
 data class DailyRecordUiState(
     val weightInput: String = "",
     val waistInput: String = "",
+    val measurementContext: WeightMeasurementContext = WeightMeasurementContext.autoInfer(
+        java.time.LocalTime.now().hour
+    ),
     val isSaving: Boolean = false,
     val error: String? = null
 )
@@ -88,6 +92,10 @@ class DailyRecordViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(weightInput = value, error = null)
     }
 
+    fun updateWeightContext(context: WeightMeasurementContext) {
+        _uiState.value = _uiState.value.copy(measurementContext = context, error = null)
+    }
+
     fun updateWaistInput(value: String) {
         _uiState.value = _uiState.value.copy(waistInput = value, error = null)
     }
@@ -116,7 +124,12 @@ class DailyRecordViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSaving = true, error = null)
             try {
-                if (needsWeight && weight != null) userRepository.recordWeight(weight)
+                if (needsWeight && weight != null) {
+                    userRepository.recordWeight(
+                        weightKg = weight,
+                        measurementContext = _uiState.value.measurementContext
+                    )
+                }
                 if (needsWaist && waist != null) userRepository.recordWaist(waist)
                 _uiState.value = DailyRecordUiState()
             } catch (e: Exception) {

@@ -50,6 +50,14 @@ import kotlinx.coroutines.delay
  */
 private const val SPLASH_MIN_DURATION_MS = 1500L
 
+/**
+ * 开屏动画开关（代码级，不暴露到界面）：
+ * - true：播放粉色圆环 + 白色跳动爱心动画。
+ * - false：不播动画，短暂白屏等引导状态读完直接进入应用。
+ * 关闭时动画不渲染，但数据读取的空白占位仍会保留，避免老用户闪一下引导页。
+ */
+private const val SPLASH_ANIMATION_ENABLED = true
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject
@@ -70,28 +78,44 @@ class MainActivity : ComponentActivity() {
                     minDurationElapsed = true
                 }
 
-                if (isOnboardingComplete == null || !minDurationElapsed) {
-                    // 开机加载层：白底 + 粉色催眠圆环 + 中心白色跳动的心，
-                    // 配色与参考仓库硬编码保持一致。
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(backgroundWhite),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // 圆环画在心的下面，和参考仓库保持一致。
-                        RingAnimation(color = ringPink)
-                        BeatingHeart()
-                    }
-                } else {
-                    AppNavGraph(
-                        navController = navController,
-                        startDestination = if (isOnboardingComplete == true) {
-                            Screen.MainTabs.route
-                        } else {
-                            Screen.Onboarding.route
+                // 开屏动画开关关闭时不渲染动画；但仍保留数据读取占位，避免闪引导页。
+                val showSplashAnimation =
+                    SPLASH_ANIMATION_ENABLED && (isOnboardingComplete == null || !minDurationElapsed)
+                val waitingForData = isOnboardingComplete == null
+
+                when {
+                    showSplashAnimation -> {
+                        // 开机加载层：白底 + 粉色催眠圆环 + 中心白色跳动的心，
+                        // 配色与参考仓库硬编码保持一致。
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(backgroundWhite),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // 圆环画在心的下面，和参考仓库保持一致。
+                            RingAnimation(color = ringPink)
+                            BeatingHeart()
                         }
-                    )
+                    }
+                    waitingForData -> {
+                        // 动画关闭时的空白占位：等引导状态读完，不播动画，避免闪引导页。
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(backgroundWhite)
+                        )
+                    }
+                    else -> {
+                        AppNavGraph(
+                            navController = navController,
+                            startDestination = if (isOnboardingComplete == true) {
+                                Screen.MainTabs.route
+                            } else {
+                                Screen.Onboarding.route
+                            }
+                        )
+                    }
                 }
             }
         }

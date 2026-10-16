@@ -126,6 +126,18 @@ object DatabaseModule {
         }
     }
 
+    /**
+     * 5 -> 6：体重记录新增「测量时段」列，历史数据统一按晨起空腹计。
+     */
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE `user_weight_logs` " +
+                    "ADD COLUMN `measurementContext` TEXT NOT NULL DEFAULT 'MORNING_FASTING'"
+            )
+        }
+    }
+
     @Singleton
     @Provides
     fun provideAppDatabase(
@@ -136,7 +148,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "calorie_app.db"
         )
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
             .build()
     }
 

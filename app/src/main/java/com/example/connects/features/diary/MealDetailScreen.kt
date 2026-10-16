@@ -1,22 +1,22 @@
 package com.example.connects.features.diary
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,15 +32,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.connects.core.util.formatAmount
 import com.example.connects.domain.model.FoodEntry
 import com.example.connects.domain.model.MealType
+import com.example.connects.ui.components.hairline
+import com.example.connects.ui.theme.JournalTitle
 
 /**
- * 某一餐的记录详情。从日志页的餐次卡点进来，列出这一餐吃了什么，可以逐条删除。
+ * 某一餐的记录详情。从日志页的餐次行点进来，列出这一餐吃了什么，可以逐条删除。
  *
  * 数据直接来自 DiaryViewModel 当日分组里的对应那一组（不是新查询），所以这里删掉一条，
  * Room 的 Flow 会重新发出，日志页的餐次小计和当日总摄入会跟着一起更新。
+ *
+ * 版式沿用批准稿：整页无卡片，账目行 + 发丝分隔线。
  */
 @Composable
 fun MealDetailScreen(
@@ -55,11 +60,14 @@ fun MealDetailScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        // 外层 MainTabsScreen 的 Scaffold 已经加过状态栏 inset，这里不再叠一遍
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 4.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+                    .padding(start = 4.dp, end = 18.dp, top = 10.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBack) {
@@ -70,13 +78,14 @@ fun MealDetailScreen(
                 }
                 Text(
                     text = mealType.label,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    style = JournalTitle,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = "$totalCalories kcal · ${entries.size} 项",
-                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -101,12 +110,12 @@ fun MealDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-                contentPadding = PaddingValues(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                items(entries, key = { it.id }) { entry ->
-                    FoodEntryCard(
+                itemsIndexed(entries, key = { _, entry -> entry.id }) { index, entry ->
+                    FoodEntryRow(
                         entry = entry,
+                        showDivider = index < entries.lastIndex,
                         onDelete = { entryToDelete = entry }
                     )
                 }
@@ -126,36 +135,41 @@ fun MealDetailScreen(
     }
 }
 
+/** 账目行：食物名 + 克数，右侧热量 + 删除，行间发丝线。 */
 @Composable
-private fun FoodEntryCard(entry: FoodEntry, onDelete: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
+private fun FoodEntryRow(
+    entry: FoodEntry,
+    showDivider: Boolean,
+    onDelete: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
+                .padding(start = 22.dp, end = 6.dp, top = 12.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 // 餐次已经在标题栏上了，这里不再重复
-                Text(text = entry.foodName, fontWeight = FontWeight.Bold)
+                Text(
+                    text = entry.foodName,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Text(
                     text = "${formatAmount(entry.amountGrams)} g",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "${entry.totalCalories.toInt()} kcal",
-                    color = MaterialTheme.colorScheme.primary
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
+            Text(
+                text = "${entry.totalCalories.toInt()} kcal",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
             IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
@@ -163,6 +177,15 @@ private fun FoodEntryCard(entry: FoodEntry, onDelete: () -> Unit) {
                     tint = MaterialTheme.colorScheme.error
                 )
             }
+        }
+        if (showDivider) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 22.dp)
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.hairline)
+            )
         }
     }
 }
@@ -188,7 +211,9 @@ private fun DeleteEntryDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) {
+                Text("取消")
+            }
         }
     )
 }

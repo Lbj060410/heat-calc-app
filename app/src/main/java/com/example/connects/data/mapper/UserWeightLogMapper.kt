@@ -2,6 +2,7 @@ package com.example.connects.data.mapper
 
 import com.example.connects.core.database.entity.UserWeightLogEntity
 import com.example.connects.domain.model.UserWeightLog
+import com.example.connects.domain.model.WeightMeasurementContext
 import javax.inject.Inject
 
 class UserWeightLogMapper @Inject constructor() {
@@ -10,7 +11,8 @@ class UserWeightLogMapper @Inject constructor() {
             id = entity.id,
             weightKg = entity.weightKg,
             dateEpochDay = entity.dateEpochDay,
-            createdAt = entity.createdAt
+            createdAt = entity.createdAt,
+            measurementContext = WeightMeasurementContext.fromStorage(entity.measurementContext)
         )
     }
 

@@ -1,28 +1,24 @@
 package com.example.connects.features.diary
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,26 +31,47 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.connects.domain.model.MealType
+import com.example.connects.ui.components.DottedLeader
+import com.example.connects.ui.components.SectionHead
+import com.example.connects.ui.components.formatClockTime
+import com.example.connects.ui.components.formatDateLine
+import com.example.connects.ui.components.hairline
+import com.example.connects.ui.components.ledgerNumber
+import com.example.connects.ui.theme.JournalBig
+import com.example.connects.ui.theme.JournalMeal
+import com.example.connects.ui.theme.JournalTitle
+import com.example.connects.ui.theme.SerifFamily
 import java.time.LocalDate
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
+/**
+ * 日志 —— 一周横条版。
+ *
+ * 月份缩成一条：每天直接看到摄入量，选中当天即在下方给出账目汇总（大衬线数字 +
+ * 与目标的差值 + 宏量小注）和四餐明细；无记录的日子留白，不硬凑数字。
+ */
 @Composable
 fun DiaryScreen(
     viewModel: DiaryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val weekDays by viewModel.weekDays.collectAsState()
+    val targetCalories by viewModel.targetCalories.collectAsState()
     var openedMeal by remember { mutableStateOf<MealType?>(null) }
 
+    // 系统返回键：从餐次详情回到日志，而不是直接退出应用。
+    BackHandler(enabled = openedMeal != null) {
+        openedMeal = null
+    }
+
     // 点某餐进入详情页。沿用首页 FoodPickerScreen 的做法：在同一个 Compose 树里整屏替换，
-    // 不新开导航路由，DiaryViewModel 实例也保持不变，返回时日历和选中日期都还在。
+    // 不新开导航路由，DiaryViewModel 实例也保持不变，返回时周条和选中日期都还在。
     val meal = openedMeal
     if (meal != null) {
         val group = uiState.groups.firstOrNull { it.mealType == meal }
@@ -70,299 +87,343 @@ fun DiaryScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primary)
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "饮食日志",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "记录每天的饮食情况，方便查看历史与趋势。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f)
-                )
-            }
-        }
+        containerColor = MaterialTheme.colorScheme.background,
+        // 外层 MainTabsScreen 的 Scaffold 已经加过状态栏 inset，这里不再叠一遍
+        contentWindowInsets = WindowInsets(0.dp)
     ) { innerPadding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 22.dp)
         ) {
-            item {
-                CalendarPicker(
-                    selectedDate = uiState.selectedDate,
-                    onDateSelected = { viewModel.selectDate(it) }
-                )
-            }
+            Text(
+                text = "日志",
+                style = JournalTitle,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 10.dp)
+            )
+            Text(
+                text = "翻看任意一天的饮食与热量。",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 3.dp)
+            )
 
-            item {
-                DateHeader(
-                    totalCalories = uiState.totalCalories,
-                    formattedDate = viewModel.getFormattedDate(uiState.selectedDate),
-                    dayOfWeek = viewModel.getDayOfWeek(uiState.selectedDate)
-                )
-            }
+            WeekStripCard(
+                weekDays = weekDays,
+                selectedDate = uiState.selectedDate,
+                onSelectDate = viewModel::selectDate,
+                onPreviousWeek = viewModel::previousWeek,
+                onNextWeek = viewModel::nextWeek
+            )
+
+            DaySummary(
+                selectedDate = uiState.selectedDate,
+                totalCalories = uiState.totalCalories,
+                targetCalories = targetCalories,
+                groups = uiState.groups
+            )
 
             uiState.error?.let { message ->
-                item {
-                    Text(
-                        text = message,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                }
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
 
-            // 四餐固定顺序各一张入口卡，点进去看这一餐的记录
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    uiState.groups.forEach { group ->
-                        MealEntryCard(
-                            group = group,
-                            onClick = { openedMeal = group.mealType }
-                        )
-                    }
-                }
+            SectionHead(title = "当日餐次", latin = "MEALS", modifier = Modifier.padding(top = 24.dp))
+            uiState.groups.forEachIndexed { index, group ->
+                DiaryMealRow(
+                    group = group,
+                    showDivider = index > 0,
+                    onClick = { openedMeal = group.mealType }
+                )
             }
-
             if (uiState.isEmpty) {
-                item {
-                    Text(
-                        text = "这一天还没有记录，去首页添加。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                }
+                Text(
+                    text = "这一天还没有记录。",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 12.dp, start = 2.dp)
+                )
             }
 
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            Spacer(modifier = Modifier.height(28.dp))
         }
     }
 }
 
+/** 周条：‹ 月份 · 日期区间 › + 7 个日cell（日号 / 星期圈 / 当日千卡）。 */
 @Composable
-private fun MealEntryCard(group: DiaryMealGroup, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+private fun WeekStripCard(
+    weekDays: List<WeekDayUi>,
+    selectedDate: LocalDate,
+    onSelectDate: (LocalDate) -> Unit,
+    onPreviousWeek: () -> Unit,
+    onNextWeek: () -> Unit
+) {
+    val today = remember { LocalDate.now() }
+    val rangeLabel = remember(weekDays) {
+        if (weekDays.isEmpty()) {
+            ""
+        } else {
+            val first = weekDays.first().date
+            val last = weekDays.last().date
+            val monthFormatter = DateTimeFormatter.ofPattern("yyyy年M月")
+            "${first.format(monthFormatter)} · ${first.dayOfMonth}–${last.dayOfMonth}日"
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.hairline, RoundedCornerShape(14.dp))
+            .padding(horizontal = 12.dp, vertical = 12.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, top = 14.dp, bottom = 14.dp, end = 8.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = group.mealType.label,
-                style = MaterialTheme.typography.titleMedium,
+                text = "‹",
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable(onClick = onPreviousWeek)
+                    .padding(horizontal = 10.dp, vertical = 2.dp)
             )
             Text(
-                text = "${group.totalCalories} kcal · ${group.entries.size} 项",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = rangeLabel,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = SerifFamily,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
             )
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            Text(
+                text = "›",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable(onClick = onNextWeek)
+                    .padding(horizontal = 10.dp, vertical = 2.dp)
             )
         }
-    }
-}
 
-@Composable
-fun CalendarPicker(
-    selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit
-) {
-    var currentMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
+        Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+            weekDays.forEach { day ->
+                val isSelected = day.date == selectedDate
+                val isToday = day.date == today
+                val dimmed = day.isFuture
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { currentMonth = currentMonth.minusMonths(1) }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "上个月"
-                    )
-                }
-
-                Text(
-                    text = currentMonth.format(DateTimeFormatter.ofPattern("yyyy年MM月")),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                IconButton(onClick = { currentMonth = currentMonth.plusMonths(1) }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "下个月"
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                listOf("日", "一", "二", "三", "四", "五", "六").forEach { dayName ->
-                    Text(
-                        text = dayName,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.width(40.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            val firstDayOfMonth = currentMonth.atDay(1)
-            val lastDayOfMonth = currentMonth.atEndOfMonth()
-            val daysInMonth = lastDayOfMonth.dayOfMonth
-            val startOffset = firstDayOfMonth.dayOfWeek.value % 7
-
-            var currentDay = 1
-            for (week in 0..5) {
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.background
+                            else androidx.compose.ui.graphics.Color.Transparent
+                        )
+                        .clickable { onSelectDate(day.date) }
                         .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceAround
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    for (dayOfWeek in 0..6) {
-                        val dayIndex = week * 7 + dayOfWeek
-
-                        if (dayIndex < startOffset || currentDay > daysInMonth) {
-                            Box(
-                                modifier = Modifier
-                                    .width(40.dp)
-                                    .height(40.dp)
-                            )
-                        } else {
-                            val date = currentMonth.atDay(currentDay)
-                            val isSelected = date == selectedDate
-                            val isToday = date == LocalDate.now()
-
-                            DayCell(
-                                day = currentDay,
-                                isSelected = isSelected,
-                                isToday = isToday,
-                                onClick = { onDateSelected(date) }
-                            )
-
-                            currentDay++
+                    Text(
+                        text = "${day.date.dayOfMonth}",
+                        fontSize = 12.sp,
+                        fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.SemiBold,
+                        color = when {
+                            isToday -> MaterialTheme.colorScheme.primary
+                            dimmed -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
+                    )
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 3.dp)
+                            .size(30.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else androidx.compose.ui.graphics.Color.Transparent
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = weekDayChar(day.date),
+                            fontSize = 13.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                            fontFamily = if (isSelected) SerifFamily else null,
+                            color = when {
+                                isSelected -> MaterialTheme.colorScheme.onPrimary
+                                dimmed -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                                else -> MaterialTheme.colorScheme.onSurface
+                            }
+                        )
                     }
+                    Text(
+                        text = if (day.isFuture) "—" else ledgerNumber(day.kcal),
+                        fontSize = 9.5.sp,
+                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                        color = when {
+                            isSelected -> MaterialTheme.colorScheme.primary
+                            day.isFuture -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier.padding(top = 3.dp)
+                    )
                 }
-
-                if (currentDay > daysInMonth) break
             }
         }
     }
 }
 
+private fun weekDayChar(date: LocalDate): String {
+    val names = listOf("日", "一", "二", "三", "四", "五", "六")
+    return names[date.dayOfWeek.value % 7]
+}
+
+/** 当日账目汇总：大衬线数字 + 与目标差值 + 宏量小注。 */
 @Composable
-fun RowScope.DayCell(
-    day: Int,
-    isSelected: Boolean,
-    isToday: Boolean,
-    onClick: () -> Unit
+private fun DaySummary(
+    selectedDate: LocalDate,
+    totalCalories: Int,
+    targetCalories: Int,
+    groups: List<DiaryMealGroup>
 ) {
-    val background = when {
-        isSelected -> MaterialTheme.colorScheme.primary
-        isToday -> MaterialTheme.colorScheme.primaryContainer
-        else -> Color.Transparent
-    }
-    val contentColor = when {
-        isSelected -> Color.White
-        isToday -> MaterialTheme.colorScheme.onPrimaryContainer
-        else -> MaterialTheme.colorScheme.onSurface
+    val allEntries = remember(groups) { groups.flatMap { it.entries } }
+    val delta = targetCalories - totalCalories
+    val macroNote = remember(allEntries) {
+        val carbs = allEntries.sumOf { it.totalCarbs.toDouble() }
+        val protein = allEntries.sumOf { it.totalProtein.toDouble() }
+        val fat = allEntries.sumOf { it.totalFat.toDouble() }
+        val sodium = allEntries.sumOf { it.sodium.toDouble() }
+        buildString {
+            append("碳水 ${String.format("%.0f", carbs)} g")
+            append(" · 蛋白质 ${String.format("%.0f", protein)} g")
+            append(" · 脂肪 ${String.format("%.0f", fat)} g")
+            append(" · 钠 ${String.format("%,.0f", sodium)} mg")
+        }
     }
 
-    Box(
-        modifier = Modifier
-            .width(40.dp)
-            .padding(horizontal = 2.dp)
-            .height(40.dp)
-            .clip(CircleShape)
-            .background(background)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp)) {
         Text(
-            text = day.toString(),
-            color = contentColor,
-            fontSize = 14.sp,
-            fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal
+            text = formatDateLine(selectedDate),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier.padding(top = 2.dp)
+        ) {
+            Text(
+                text = ledgerNumber(totalCalories),
+                style = JournalBig,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "千卡 · 总摄入",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 9.dp, bottom = 8.dp)
+            )
+        }
+        Text(
+            text = if (delta >= 0) "较目标低 ${ledgerNumber(delta)} 千卡" else "较目标超出 ${ledgerNumber(-delta)} 千卡",
+            fontSize = 12.5.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (delta >= 0) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.tertiary
+            },
+            modifier = Modifier.padding(top = 2.dp)
+        )
+        Text(
+            text = macroNote,
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+            modifier = Modifier.padding(top = 6.dp)
         )
     }
 }
 
+/** 菜单式餐次行：餐名 + 时间与项数 + 点线 + 热量。 */
 @Composable
-private fun DateHeader(
-    totalCalories: Int,
-    formattedDate: String,
-    dayOfWeek: String
+private fun DiaryMealRow(
+    group: DiaryMealGroup,
+    showDivider: Boolean,
+    onClick: () -> Unit
 ) {
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .clickable(onClick = onClick)
+            .padding(top = 13.dp, bottom = 12.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = formattedDate,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+        if (showDivider) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.hairline)
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.padding(top = 12.dp))
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = dayOfWeek,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = group.mealType.label,
+                style = JournalMeal,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "总摄入 ${totalCalories} kcal",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
+            if (group.entries.isNotEmpty()) {
+                Text(
+                    text = "${formatClockTime(group.entries.maxOf { it.createdAt })} · ${group.entries.size} 项",
+                    fontSize = 11.5.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            DottedLeader(modifier = Modifier.weight(1f).padding(horizontal = 10.dp))
+            if (group.entries.isEmpty()) {
+                Text(
+                    text = "未记录",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Text(
+                    text = ledgerNumber(group.totalCalories),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "kcal",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 2.dp)
+                )
+            }
         }
     }
 }

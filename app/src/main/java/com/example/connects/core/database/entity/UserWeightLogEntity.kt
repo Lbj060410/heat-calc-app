@@ -8,5 +8,7 @@ data class UserWeightLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val weightKg: Float,
     val dateEpochDay: Int,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    /** 测量时段，见 [com.example.connects.domain.model.WeightMeasurementContext] 的 storageKey。 */
+    val measurementContext: String = "MORNING_FASTING"
 )

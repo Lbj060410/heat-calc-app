@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">健康记录</string>
+    <string name="app_name">一胎18个</string>
     <!-- 腰围测量口径：引导页与每日弹窗共用同一份，避免两处文案改得不一样。 -->
     <string name="waist_measure_hint">站立，自然呼气末量肚脐上方最细处；不收腹，皮尺贴合但不压陷</string>
 </resources>

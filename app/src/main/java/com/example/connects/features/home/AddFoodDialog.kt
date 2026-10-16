@@ -3,26 +3,27 @@ package com.example.connects.features.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -31,8 +32,22 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.connects.core.util.formatAmount
+import com.example.connects.ui.components.JournalUnderlineField
+import com.example.connects.ui.components.NoteBlock
+import com.example.connects.ui.components.SectionHead
+import com.example.connects.ui.components.ledgerNumber
+import com.example.connects.ui.theme.JournalInput
+import com.example.connects.ui.theme.JournalStatement
+import com.example.connects.ui.theme.JournalTitle
 import kotlin.math.roundToInt
 
+/** 弹窗表单里下划线输入的字号：比首页大数字小一号。 */
+private val DialogFieldStyle = JournalInput.copy(fontSize = 22.sp, lineHeight = 28.sp)
+
+/**
+ * 自定义食物弹窗 —— 手账风全屏表单：下划线输入 + 分节标题 + 墨色保存。
+ * 热量随三大营养素自动推算、同名食物自动挂靠既有条目的逻辑全部保留。
+ */
 @Composable
 fun AddFoodDialog(
     knownFoods: List<HomeViewModel.QuickFoodItem>,
@@ -91,134 +106,109 @@ fun AddFoodDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Card(
+        Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(4.dp),
-            shape = MaterialTheme.shapes.large
+                .padding(6.dp),
+            shape = RoundedCornerShape(22.dp),
+            color = MaterialTheme.colorScheme.background
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(24.dp)
             ) {
                 Text(
                     text = "添加食物",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    style = JournalTitle,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 6.dp)
                 )
 
-                OutlinedTextField(
+                Spacer(modifier = Modifier.height(22.dp))
+                JournalUnderlineField(
+                    label = "食物名称",
                     value = foodName,
                     onValueChange = { foodName = it },
-                    label = { Text("食物名称") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    keyboardType = KeyboardType.Text,
+                    textStyle = DialogFieldStyle
                 )
 
                 if (matchedFood != null) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
+                    NoteBlock(
+                        ruleColor = MaterialTheme.colorScheme.primary,
+                        tagColor = MaterialTheme.colorScheme.primary,
+                        tag = "食物库里已有",
+                        statement = {
                             Text(
-                                text = "食物库里已经有「${matchedFood.name}」",
-                                fontWeight = FontWeight.SemiBold
+                                text = "「${matchedFood.name}」",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
-                                text = "${formatAmount(matchedFood.caloriesPer100g)} kcal/100g · " +
-                                    "碳水 ${formatAmount(matchedFood.carbsPer100g)} g · " +
-                                    "蛋白质 ${formatAmount(matchedFood.proteinPer100g)} g · " +
-                                    "脂肪 ${formatAmount(matchedFood.fatPer100g)} g",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Text(
-                                text = "保存后直接记到它名下，不会新建重复食物",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                        },
+                        hint = "${formatAmount(matchedFood.caloriesPer100g)} kcal/100g · " +
+                            "碳水 ${formatAmount(matchedFood.carbsPer100g)} g · " +
+                            "蛋白质 ${formatAmount(matchedFood.proteinPer100g)} g · " +
+                            "脂肪 ${formatAmount(matchedFood.fatPer100g)} g\n" +
+                            "保存后直接记到它名下，不会新建重复食物"
+                    )
                 }
 
-                OutlinedTextField(
+                Spacer(modifier = Modifier.height(20.dp))
+                JournalUnderlineField(
+                    label = "食用数量",
                     value = amountGrams,
                     onValueChange = { amountGrams = it },
-                    label = { Text("食用数量 (克)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true
+                    unit = "g",
+                    textStyle = DialogFieldStyle
                 )
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                Text(
-                    text = "营养成分 (每100克)",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
+                SectionHead(
+                    title = "营养成分 · 每100克",
+                    latin = "MACROS",
+                    modifier = Modifier.padding(top = 28.dp)
                 )
-
-                OutlinedTextField(
+                Spacer(modifier = Modifier.height(14.dp))
+                JournalUnderlineField(
+                    label = "碳水 · G/100G",
                     value = carbs,
                     onValueChange = { carbs = it },
-                    label = { Text("碳水 (g/100g)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true
+                    textStyle = DialogFieldStyle
                 )
-
-                OutlinedTextField(
+                Spacer(modifier = Modifier.height(14.dp))
+                JournalUnderlineField(
+                    label = "蛋白质 · G/100G",
                     value = protein,
                     onValueChange = { protein = it },
-                    label = { Text("蛋白质 (g/100g)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true
+                    textStyle = DialogFieldStyle
                 )
-
-                OutlinedTextField(
+                Spacer(modifier = Modifier.height(14.dp))
+                JournalUnderlineField(
+                    label = "脂肪 · G/100G",
                     value = fat,
                     onValueChange = { fat = it },
-                    label = { Text("脂肪 (g/100g)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true
+                    textStyle = DialogFieldStyle
                 )
-
-                OutlinedTextField(
+                Spacer(modifier = Modifier.height(14.dp))
+                JournalUnderlineField(
+                    label = "钠 · MG/100G",
                     value = sodium,
                     onValueChange = { sodium = it },
-                    label = { Text("钠 (mg/100g)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true
+                    textStyle = DialogFieldStyle
                 )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                OutlinedTextField(
+                Spacer(modifier = Modifier.height(14.dp))
+                JournalUnderlineField(
+                    label = "热量 · KCAL/100G",
                     value = calories,
                     onValueChange = {
                         calories = it
                         caloriesEditedManually = true
                     },
-                    label = { Text("热量 (kcal/100g)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    supportingText = {
-                        Text("根据三大营养素自动推算，也可以手动改")
-                    }
+                    keyboardType = KeyboardType.Number,
+                    supportingText = "根据三大营养素自动推算，也可以手动改",
+                    textStyle = DialogFieldStyle
                 )
 
                 if (amountValue > 0f && caloriesPer100g > 0f) {
@@ -235,14 +225,14 @@ fun AddFoodDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp),
+                        .padding(top = 30.dp, bottom = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedButton(
+                    TextButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("取消")
+                        Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
                     Button(
@@ -258,12 +248,22 @@ fun AddFoodDialog(
                             )
                             onSave(data)
                         },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
                         enabled = foodName.isNotBlank() &&
                             amountValue > 0f &&
-                            caloriesPer100g > 0f
+                            caloriesPer100g > 0f,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.onSurface,
+                            contentColor = MaterialTheme.colorScheme.surface
+                        )
                     ) {
-                        Text(if (matchedFood != null) "记到「${matchedFood.name}」" else "保存")
+                        Text(
+                            text = if (matchedFood != null) "记到「${matchedFood.name}」" else "保存",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
@@ -271,7 +271,7 @@ fun AddFoodDialog(
     }
 }
 
-/** 把每100克的营养值按实际克数换算后展示，让用户在保存前就能核对总热量。 */
+/** 换算账目行：衬线大数字给出本次总热量，宏量小注跟在后面。 */
 @Composable
 private fun IntakePreview(
     amountGrams: Float,
@@ -283,29 +283,52 @@ private fun IntakePreview(
 ) {
     val ratio = amountGrams / 100f
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+    Row(
+        verticalAlignment = Alignment.Bottom,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text("本次摄入", style = MaterialTheme.typography.labelLarge)
+        Column {
             Text(
-                text = "${amountGrams.roundToInt()} g ≈ ${(caloriesPer100g * ratio).roundToInt()} kcal",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                text = "本次摄入",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 2.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.padding(top = 4.dp)
+            ) {
+                Text(
+                    text = "${amountGrams.roundToInt()} g",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(end = 6.dp, bottom = 3.dp)
+                )
+                Text(
+                    text = "≈ ${ledgerNumber((caloriesPer100g * ratio).roundToInt())}",
+                    style = JournalStatement,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "kcal",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 6.dp, bottom = 3.dp)
+                )
+            }
             Text(
                 text = "碳水 ${formatAmount(carbsPer100g * ratio)} g · " +
                     "蛋白质 ${formatAmount(proteinPer100g * ratio)} g · " +
                     "脂肪 ${formatAmount(fatPer100g * ratio)} g · " +
                     "钠 ${formatAmount(sodiumPer100g * ratio)} mg",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }

@@ -6,120 +6,81 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Material Design 3 Typography Scale - Optimized for Health & Fitness App
-val Typography = Typography(
-    // Display styles - Large headlines
-    displayLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
-        fontSize = 57.sp,
-        lineHeight = 64.sp,
-        letterSpacing = (-0.25).sp
-    ),
-    displayMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
-        fontSize = 45.sp,
-        lineHeight = 52.sp,
-        letterSpacing = 0.sp
-    ),
-    displaySmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
-        fontSize = 36.sp,
-        lineHeight = 44.sp,
-        letterSpacing = 0.sp
-    ),
-    
-    // Headline styles - Section headers
-    headlineLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 32.sp,
-        lineHeight = 40.sp,
-        letterSpacing = 0.sp
-    ),
-    headlineMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 28.sp,
-        lineHeight = 36.sp,
-        letterSpacing = 0.sp
-    ),
-    headlineSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 24.sp,
-        lineHeight = 32.sp,
-        letterSpacing = 0.sp
-    ),
-    
-    // Title styles - Card titles, dialog titles
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    titleMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.15.sp
-    ),
-    titleSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
-    ),
-    
-    // Body styles - Main content text
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.25.sp
-    ),
-    bodySmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.4.sp
-    ),
-    
-    // Label styles - Buttons, tabs, small UI elements
-    labelLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
-    ),
-    labelMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
+/**
+ * 手账排版体系。
+ *
+ * 正文与控件用系统默认无衬线（Typography），保持可读性；
+ * 数字与标题用衬线（FontFamily.Serif，中文对应 Noto Serif），
+ * 「大数字层级」是这套设计的核心表达。
+ */
+
+val SerifFamily = FontFamily.Serif
+
+/** 首页剩余热量：特大衬线数字。 */
+val JournalHero = TextStyle(
+    fontFamily = SerifFamily,
+    fontWeight = FontWeight.Black,
+    fontSize = 84.sp,
+    lineHeight = 88.sp,
+    letterSpacing = (-0.5).sp
 )
+
+/** 日志当日汇总等次级大数字。 */
+val JournalBig = TextStyle(
+    fontFamily = SerifFamily,
+    fontWeight = FontWeight.Black,
+    fontSize = 52.sp,
+    lineHeight = 56.sp,
+    letterSpacing = (-0.3).sp
+)
+
+/** 页面大标题（今日 / 日志）。 */
+val JournalTitle = TextStyle(
+    fontFamily = SerifFamily,
+    fontWeight = FontWeight.Black,
+    fontSize = 27.sp,
+    lineHeight = 34.sp
+)
+
+/** 区块标题（今日餐次 / 快捷入口）。 */
+val JournalSection = TextStyle(
+    fontFamily = SerifFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 16.sp,
+    lineHeight = 22.sp
+)
+
+/** 菜单里的餐次名。 */
+val JournalMeal = TextStyle(
+    fontFamily = SerifFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 16.sp,
+    lineHeight = 22.sp
+)
+
+/** 印章头像里的单字。 */
+val JournalSeal = TextStyle(
+    fontFamily = SerifFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 20.sp,
+    lineHeight = 24.sp
+)
+
+/** 「我的」页状态陈述句 / 目标数字。 */
+val JournalStatement = TextStyle(
+    fontFamily = SerifFamily,
+    fontWeight = FontWeight.Black,
+    fontSize = 21.sp,
+    lineHeight = 28.sp
+)
+
+/** 弹窗输入框里的大数字。 */
+val JournalInput = TextStyle(
+    fontFamily = SerifFamily,
+    fontWeight = FontWeight.Black,
+    fontSize = 32.sp,
+    lineHeight = 38.sp
+)
+
+/** Material 组件（表单 / 按钮 / 正文）保持无衬线。 */
+val Typography = Typography()

@@ -1,4 +1,4 @@
-﻿package com.example.connects.navigation
+package com.example.connects.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel

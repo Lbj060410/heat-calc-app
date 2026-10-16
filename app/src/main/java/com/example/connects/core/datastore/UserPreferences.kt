@@ -46,6 +46,9 @@ class UserPreferences(private val context: Context) {
         val KEY_LAST_ADJUST_REASON = stringPreferencesKey("last_adjust_reason")
         val KEY_LAST_ADJUST_DIRECTION = stringPreferencesKey("last_adjust_direction")
         val KEY_LAST_ADJUST_RUN = intPreferencesKey("last_adjust_run")
+
+        /** 本地头像文件路径；从未设置过时不存在。 */
+        val KEY_AVATAR_URI = stringPreferencesKey("avatar_uri")
     }
 
     val isOnboardingComplete: Flow<Boolean> = context.dataStore.data
@@ -101,6 +104,20 @@ class UserPreferences(private val context: Context) {
     suspend fun updateDailyCaloricTarget(target: Int) {
         context.dataStore.edit { preferences ->
             preferences[KEY_DAILY_CALORIE_TARGET] = target
+        }
+    }
+
+    /** 本地头像文件路径；从未设置过时为 null。 */
+    val avatarUri: Flow<String?> = context.dataStore.data.map { it[KEY_AVATAR_URI] }
+
+    /** 保存 / 清除头像路径；传 null 即清除。 */
+    suspend fun updateAvatarUri(path: String?) {
+        context.dataStore.edit { preferences ->
+            if (path == null) {
+                preferences.remove(KEY_AVATAR_URI)
+            } else {
+                preferences[KEY_AVATAR_URI] = path
+            }
         }
     }
 

@@ -2,17 +2,21 @@ package com.example.connects.features.diary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.connects.core.datastore.UserPreferences
 import com.example.connects.domain.model.FoodEntry
 import com.example.connects.domain.model.MealType
 import com.example.connects.domain.repository.FoodRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -24,6 +28,13 @@ data class DiaryMealGroup(
     val mealType: MealType,
     val entries: List<FoodEntry>,
     val totalCalories: Int
+)
+
+/** 周条上的一天：日期 + 当日摄入 + 是否是未来（未来没有数据）。 */
+data class WeekDayUi(
+    val date: LocalDate,
+    val kcal: Int,
+    val isFuture: Boolean
 )
 
 data class DiaryUiState(
@@ -40,7 +51,8 @@ data class DiaryUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class DiaryViewModel @Inject constructor(
-    private val foodRepository: FoodRepository
+    private val foodRepository: FoodRepository,
+    userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DiaryUiState())
@@ -48,6 +60,32 @@ class DiaryViewModel @Inject constructor(
 
     /** 当前选中的日期，切换日期时由 flatMapLatest 取消上一个日期的订阅。 */
     private val selectedDate = MutableStateFlow(LocalDate.now())
+
+    /** 顶部周条：选中日期所在周（周日起）每天一条摄入汇总。 */
+    val weekDays: StateFlow<List<WeekDayUi>> = selectedDate
+        .flatMapLatest { date ->
+            val weekStart = date.minusDays((date.dayOfWeek.value % 7).toLong())
+            val days = (0L..6L).map { weekStart.plusDays(it) }
+            val dayFlows = days.map { day ->
+                foodRepository.getEntriesByDate(day.toEpochDay().toInt())
+                    .map { entries -> entries.sumOf { it.totalCalories.toInt() } }
+            }
+            combine(dayFlows) { kcals: Array<Int> ->
+                val today = LocalDate.now()
+                days.mapIndexed { index, day ->
+                    WeekDayUi(
+                        date = day,
+                        kcal = kcals[index],
+                        isFuture = day.isAfter(today)
+                    )
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** 当日热量目标，用来显示「较目标低/超出 X」。 */
+    val targetCalories: StateFlow<Int> = userPreferences.dailyCaloricTarget
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 2000)
 
     init {
         // 旧实现每次选日期都新起一个永不被取消的 collect，切几次日期就有几个订阅
@@ -75,6 +113,14 @@ class DiaryViewModel @Inject constructor(
 
     fun selectDate(date: LocalDate) {
         selectedDate.value = date
+    }
+
+    fun previousWeek() {
+        selectedDate.value = selectedDate.value.minusWeeks(1)
+    }
+
+    fun nextWeek() {
+        selectedDate.value = selectedDate.value.plusWeeks(1)
     }
 
     /**

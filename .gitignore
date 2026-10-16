@@ -16,3 +16,4 @@ local.properties
 .gradle-user
 .kotlin
 build_output.txt
+ui_preview.html
