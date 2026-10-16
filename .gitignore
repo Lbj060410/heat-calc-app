@@ -18,3 +18,12 @@ local.properties
 build_output.txt
 ui_preview.html
 dist/
+# 敏感文件加固
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+.env
+secrets.properties
+signing.properties
