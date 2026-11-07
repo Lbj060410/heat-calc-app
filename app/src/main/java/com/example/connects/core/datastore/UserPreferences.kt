@@ -8,6 +8,7 @@ import com.example.connects.domain.model.AdaptiveTargetState
 import com.example.connects.domain.model.BodyStatus
 import com.example.connects.domain.model.BodyStatusSettlement
 import com.example.connects.domain.model.CalorieAdjustment
+import com.example.connects.domain.model.CalorieAdvice
 import com.example.connects.domain.model.MacroTargets
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -46,6 +47,11 @@ class UserPreferences(private val context: Context) {
         val KEY_LAST_ADJUST_REASON = stringPreferencesKey("last_adjust_reason")
         val KEY_LAST_ADJUST_DIRECTION = stringPreferencesKey("last_adjust_direction")
         val KEY_LAST_ADJUST_RUN = intPreferencesKey("last_adjust_run")
+
+        /** 本周期「只给建议、没改目标」的记录（依从性偏离时产生）。 */
+        val KEY_ADVICE_DAY = intPreferencesKey("calorie_advice_day")
+        val KEY_ADVICE_REASON = stringPreferencesKey("calorie_advice_reason")
+        val KEY_ADVICE_ADHERENCE = intPreferencesKey("calorie_advice_adherence")
 
         /** 本地头像文件路径；从未设置过时不存在。 */
         val KEY_AVATAR_URI = stringPreferencesKey("avatar_uri")
@@ -232,6 +238,23 @@ class UserPreferences(private val context: Context) {
             preferences[KEY_LAST_ADJUST_BEFORE] = adjustment.beforeCalories
             preferences[KEY_LAST_ADJUST_AFTER] = adjustment.afterCalories
             preferences[KEY_LAST_ADJUST_REASON] = adjustment.reason
+        }
+    }
+
+    /** 本周期只给建议、没改目标的结论；从未产生过时 day=0。 */
+    val calorieAdvice: Flow<CalorieAdvice> = context.dataStore.data.map { preferences ->
+        CalorieAdvice(
+            day = preferences[KEY_ADVICE_DAY] ?: 0,
+            reason = preferences[KEY_ADVICE_REASON].orEmpty(),
+            adherencePercent = preferences[KEY_ADVICE_ADHERENCE]
+        )
+    }
+
+    suspend fun saveCalorieAdvice(advice: CalorieAdvice) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_ADVICE_DAY] = advice.day
+            preferences[KEY_ADVICE_REASON] = advice.reason
+            advice.adherencePercent?.let { preferences[KEY_ADVICE_ADHERENCE] = it }
         }
     }
 }

@@ -3,6 +3,7 @@ package com.example.connects.ui.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -32,6 +35,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -358,6 +362,100 @@ fun JournalUnderlineField(
                 lineHeight = 15.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                 modifier = Modifier.padding(top = 6.dp)
+            )
+        }
+    }
+}
+
+/**
+ * 便签贴纸信息区：「我的」页状态块的另一种排版。
+ * 一张暖白便签：顶部半透明胶带、轻微旋转、柔和阴影，像粘在纸上；
+ * 去掉了左色条，靠旋转与胶带区分层级。
+ */
+@Composable
+fun StickyNote(
+    tag: String,
+    tagColor: Color,
+    statement: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    rotationDegrees: Float = 0f,
+    hint: String? = null,
+    evidence: String? = null
+) {
+    val shape = RoundedCornerShape(10.dp)
+    // 胶带：半透明暖米色，深色主题下压暗。
+    val tapeColor = if (isSystemInDarkTheme()) Color(0x5C4C4232) else Color(0x8CD3C294)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+            .shadow(elevation = 3.dp, shape = shape, clip = false)
+            .graphicsLayer(rotationZ = rotationDegrees)
+            .background(MaterialTheme.colorScheme.surface, shape)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+    ) {
+        // 胶带贴在便签上缘，略微反方向倾斜，模拟真实贴纸。
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .offset(y = (-19).dp)
+                .size(width = 58.dp, height = 13.dp)
+                .graphicsLayer(rotationZ = if (rotationDegrees < 0f) 3f else -3f)
+                .background(tapeColor, RoundedCornerShape(2.dp))
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // 标签前的菱形小标，像手账里的强调记号。
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .graphicsLayer(rotationZ = 45f)
+                    .background(tagColor)
+            )
+            Spacer(modifier = Modifier.width(7.dp))
+            Text(
+                text = tag,
+                fontSize = 10.5.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.8.sp,
+                color = tagColor
+            )
+        }
+        Box(modifier = Modifier.padding(top = 6.dp)) { statement() }
+        if (hint != null) {
+            Text(
+                text = hint,
+                fontSize = 12.sp,
+                lineHeight = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+        if (evidence != null) {
+            // 点线分隔，呼应手账的虚线装饰。
+            val dividerColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .height(1.dp)
+                    .drawBehind {
+                        drawLine(
+                            color = dividerColor,
+                            start = Offset(0f, size.height / 2f),
+                            end = Offset(size.width, size.height / 2f),
+                            strokeWidth = 1.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(
+                                floatArrayOf(4.dp.toPx(), 4.dp.toPx())
+                            )
+                        )
+                    }
+            )
+            Text(
+                text = evidence,
+                fontSize = 10.sp,
+                lineHeight = 15.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }

@@ -61,6 +61,9 @@ fun AddFoodDialog(
     var fat by remember { mutableStateOf("") }
     var sodium by remember { mutableStateOf("") }
     var calories by remember { mutableStateOf("") }
+    // 可选单份计量：单位名称 + 每份克数，都留空表示不启用
+    var servingName by remember { mutableStateOf("") }
+    var servingGrams by remember { mutableStateOf("") }
     // 用户手动改过热量之后就不再自动覆盖他的输入
     var caloriesEditedManually by remember { mutableStateOf(false) }
 
@@ -149,9 +152,9 @@ fun AddFoodDialog(
                             )
                         },
                         hint = "${formatAmount(matchedFood.caloriesPer100g)} kcal/100g · " +
-                            "碳水 ${formatAmount(matchedFood.carbsPer100g)} g · " +
                             "蛋白质 ${formatAmount(matchedFood.proteinPer100g)} g · " +
-                            "脂肪 ${formatAmount(matchedFood.fatPer100g)} g\n" +
+                            "脂肪 ${formatAmount(matchedFood.fatPer100g)} g · " +
+                            "碳水 ${formatAmount(matchedFood.carbsPer100g)} g\n" +
                             "保存后直接记到它名下，不会新建重复食物"
                     )
                 }
@@ -170,11 +173,17 @@ fun AddFoodDialog(
                     latin = "MACROS",
                     modifier = Modifier.padding(top = 28.dp)
                 )
+                // 字段顺序对齐食品营养标签（能量 → 蛋白质 → 脂肪 → 碳水化合物 → 钠）
                 Spacer(modifier = Modifier.height(14.dp))
                 JournalUnderlineField(
-                    label = "碳水 · G/100G",
-                    value = carbs,
-                    onValueChange = { carbs = it },
+                    label = "热量 · KCAL/100G",
+                    value = calories,
+                    onValueChange = {
+                        calories = it
+                        caloriesEditedManually = true
+                    },
+                    keyboardType = KeyboardType.Number,
+                    supportingText = "根据三大营养素自动推算，也可以手动改",
                     textStyle = DialogFieldStyle
                 )
                 Spacer(modifier = Modifier.height(14.dp))
@@ -193,23 +202,51 @@ fun AddFoodDialog(
                 )
                 Spacer(modifier = Modifier.height(14.dp))
                 JournalUnderlineField(
+                    label = "碳水 · G/100G",
+                    value = carbs,
+                    onValueChange = { carbs = it },
+                    textStyle = DialogFieldStyle
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+                JournalUnderlineField(
                     label = "钠 · MG/100G",
                     value = sodium,
                     onValueChange = { sodium = it },
                     textStyle = DialogFieldStyle
                 )
-                Spacer(modifier = Modifier.height(14.dp))
-                JournalUnderlineField(
-                    label = "热量 · KCAL/100G",
-                    value = calories,
-                    onValueChange = {
-                        calories = it
-                        caloriesEditedManually = true
-                    },
-                    keyboardType = KeyboardType.Number,
-                    supportingText = "根据三大营养素自动推算，也可以手动改",
-                    textStyle = DialogFieldStyle
+
+                SectionHead(
+                    title = "单份计量 · 可选",
+                    latin = "SERVING",
+                    modifier = Modifier.padding(top = 28.dp)
                 )
+                Text(
+                    text = "设了之后记录时直接填「几颗 / 几个」，不用每次称重；" +
+                        "拿不准每份多少克就留空，继续按克数记。",
+                    fontSize = 12.sp,
+                    lineHeight = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp)
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    JournalUnderlineField(
+                        label = "单位名称 · 颗/个/片…",
+                        value = servingName,
+                        onValueChange = { servingName = it },
+                        keyboardType = KeyboardType.Text,
+                        modifier = Modifier.weight(1f),
+                        textStyle = DialogFieldStyle
+                    )
+                    JournalUnderlineField(
+                        label = "每份克数 · G",
+                        value = servingGrams,
+                        onValueChange = { servingGrams = it },
+                        keyboardType = KeyboardType.Number,
+                        modifier = Modifier.weight(1f),
+                        textStyle = DialogFieldStyle
+                    )
+                }
 
                 if (amountValue > 0f && caloriesPer100g > 0f) {
                     IntakePreview(
@@ -237,6 +274,7 @@ fun AddFoodDialog(
 
                     Button(
                         onClick = {
+                            val servingGramsValue = servingGrams.toFloatOrNull() ?: 0f
                             val data = AddFoodData(
                                 foodName = foodName,
                                 amountGrams = amountValue,
@@ -244,7 +282,12 @@ fun AddFoodDialog(
                                 protein = protein.toFloatOrNull() ?: 0f,
                                 fat = fat.toFloatOrNull() ?: 0f,
                                 sodium = sodium.toFloatOrNull() ?: 0f,
-                                calories = caloriesPer100g
+                                calories = caloriesPer100g,
+                                // 单位名称和每份克数都有效才算启用单份计量
+                                servingName = servingName.trim().ifBlank { null },
+                                servingGrams = if (servingName.isNotBlank() && servingGramsValue > 0f) {
+                                    servingGramsValue
+                                } else null
                             )
                             onSave(data)
                         },
@@ -322,9 +365,9 @@ private fun IntakePreview(
                 )
             }
             Text(
-                text = "碳水 ${formatAmount(carbsPer100g * ratio)} g · " +
-                    "蛋白质 ${formatAmount(proteinPer100g * ratio)} g · " +
+                text = "蛋白质 ${formatAmount(proteinPer100g * ratio)} g · " +
                     "脂肪 ${formatAmount(fatPer100g * ratio)} g · " +
+                    "碳水 ${formatAmount(carbsPer100g * ratio)} g · " +
                     "钠 ${formatAmount(sodiumPer100g * ratio)} mg",
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
@@ -341,5 +384,7 @@ data class AddFoodData(
     val protein: Float,
     val fat: Float,
     val sodium: Float,
-    val calories: Float
+    val calories: Float,
+    val servingName: String? = null,
+    val servingGrams: Float? = null
 )

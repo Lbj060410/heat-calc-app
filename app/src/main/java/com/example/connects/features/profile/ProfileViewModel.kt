@@ -10,6 +10,7 @@ import com.example.connects.domain.model.ActivityLevel
 import com.example.connects.domain.model.BodyStatusSettlement
 import com.example.connects.domain.model.BodyStatusSnapshot
 import com.example.connects.domain.model.CalorieAdjustment
+import com.example.connects.domain.model.CalorieAdvice
 import com.example.connects.domain.model.FoodEntry
 import com.example.connects.domain.model.UserProfile
 import com.example.connects.domain.model.UserWaistLog
@@ -45,6 +46,8 @@ data class ProfileUiState(
     val latestWaistCm: Float? = null,
     /** 最近一次热量目标调整，用于解释「目标为什么变了」。 */
     val adjustment: CalorieAdjustment = CalorieAdjustment(),
+    /** 本周期「没改目标、只给执行建议」的结论（依从性偏离时产生）。 */
+    val advice: CalorieAdvice = CalorieAdvice(),
     /** 目标是否已由自适应引擎接管（第一个月为 false）。 */
     val isAdaptiveTarget: Boolean = false,
     val isLoading: Boolean = false,
@@ -75,6 +78,16 @@ class ProfileViewModel @Inject constructor(
     init {
         observeUserProfile()
         observeAvatar()
+        observeCalorieAdvice()
+    }
+
+    /** 执行建议单独收集：它在每次结算时刷新，不必重算整页数据流。 */
+    private fun observeCalorieAdvice() {
+        viewModelScope.launch {
+            userRepository.getCalorieAdvice().collect { advice ->
+                _uiState.value = _uiState.value.copy(advice = advice)
+            }
+        }
     }
 
     /** 头像路径单独收集：换头像不必重算整个资料页的数据流。 */

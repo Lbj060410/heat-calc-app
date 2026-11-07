@@ -138,6 +138,30 @@ object DatabaseModule {
         }
     }
 
+    /**
+     * 6 -> 7：食物新增可选单份计量（单位名称 + 每份克数），老数据默认不启用。
+     */
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE `food_items` ADD COLUMN `servingName` TEXT"
+            )
+            db.execSQL(
+                "ALTER TABLE `food_items` ADD COLUMN `servingGrams` REAL"
+            )
+        }
+    }
+
+    /**
+     * 7 -> 8：空迁移。仅用于绕过系统更新后偶发的 schema 版本号错乱
+     * （旧 schema 7 被 Room 误判为 schema 6 并触发不支持的降级迁移）。
+     */
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // schema 无变化，noop。
+        }
+    }
+
     @Singleton
     @Provides
     fun provideAppDatabase(
@@ -148,7 +172,13 @@ object DatabaseModule {
             AppDatabase::class.java,
             "calorie_app.db"
         )
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(
+                MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+                MIGRATION_6_7, MIGRATION_7_8
+            )
+            // 兜底：未来如果出现未注册的升级或降级路径，清库重建。
+            // 正常升级迁移都已显式注册，只有系统更新或手动装旧包时才会走到这里。
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
 

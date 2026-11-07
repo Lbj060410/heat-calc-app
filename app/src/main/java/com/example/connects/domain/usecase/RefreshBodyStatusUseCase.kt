@@ -4,6 +4,7 @@ import com.example.connects.core.util.todayEpochDay
 import com.example.connects.domain.model.BodyStatus
 import com.example.connects.domain.model.BodyStatusSnapshot
 import com.example.connects.domain.model.CalorieAdjustment
+import com.example.connects.domain.model.CalorieAdvice
 import com.example.connects.domain.model.UserProfile
 import com.example.connects.domain.repository.FoodRepository
 import com.example.connects.domain.repository.UserRepository
@@ -138,7 +139,10 @@ class RefreshBodyStatusUseCase @Inject constructor(
             heightCm = profile.heightCm,
             isMale = profile.gender == "male",
             lastDirection = state.lastAdjustDirection,
-            lastRun = state.lastAdjustRun
+            lastRun = state.lastAdjustRun,
+            // 实际摄入既是判断「该不该改目标」的依据，也是给用户的执行反馈。
+            averageIntake = snapshot.averageIntake,
+            intakeDays = snapshot.intakeDays
         )
 
         val macroTargets = calculateMacroTargetsUseCase(
@@ -164,6 +168,20 @@ class RefreshBodyStatusUseCase @Inject constructor(
                 )
             )
         }
+
+        // 依从性偏离时目标不动，只把执行建议落盘；本轮真的改了目标就把旧建议清掉，
+        // 免得「本期建议」还挂着上一周期的内容。
+        userRepository.saveCalorieAdvice(
+            if (plan.blockedByAdherence) {
+                CalorieAdvice(
+                    day = today,
+                    reason = plan.reason,
+                    adherencePercent = plan.adherenceRatio?.let { (it * 100).roundToInt() }
+                )
+            } else {
+                CalorieAdvice()
+            }
+        )
     }
 
     companion object {

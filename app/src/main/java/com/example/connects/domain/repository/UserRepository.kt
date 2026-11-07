@@ -4,6 +4,7 @@ import com.example.connects.domain.model.AdaptiveTargetState
 import com.example.connects.domain.model.BodyStatus
 import com.example.connects.domain.model.BodyStatusSettlement
 import com.example.connects.domain.model.CalorieAdjustment
+import com.example.connects.domain.model.CalorieAdvice
 import com.example.connects.domain.model.MacroTargets
 import com.example.connects.domain.model.UserProfile
 import com.example.connects.domain.model.UserWaistLog
@@ -78,4 +79,9 @@ interface UserRepository {
     fun getCalorieAdjustment(): Flow<CalorieAdjustment>
 
     suspend fun saveCalorieAdjustment(adjustment: CalorieAdjustment)
+
+    /** 本周期「只给建议、没改目标」的结论（依从性偏离时产生）。 */
+    fun getCalorieAdvice(): Flow<CalorieAdvice>
+
+    suspend fun saveCalorieAdvice(advice: CalorieAdvice)
 }

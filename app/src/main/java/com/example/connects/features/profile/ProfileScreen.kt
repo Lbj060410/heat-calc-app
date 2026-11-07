@@ -58,10 +58,11 @@ import com.example.connects.R
 import com.example.connects.domain.model.ActivityLevel
 import com.example.connects.domain.model.BodyStatusSnapshot
 import com.example.connects.domain.model.CalorieAdjustment
+import com.example.connects.domain.model.CalorieAdvice
 import com.example.connects.ui.components.NoteBlock
 import com.example.connects.ui.components.SectionHead
+import com.example.connects.ui.components.StickyNote
 import com.example.connects.ui.components.UserAvatar
-import com.example.connects.ui.components.hairline
 import com.example.connects.ui.components.ledgerNumber
 import com.example.connects.ui.theme.JournalBig
 import com.example.connects.ui.theme.JournalStatement
@@ -123,11 +124,10 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
 }
 
 /**
- * 「我的」落地页 —— 状态先行的手账版式。
+ * 「我的」落地页 —— 状态先行的便签手账版式。
  *
- * 印章头像开页；身体状态 / 每日目标 / 上次调整各是一个左色条信息区：
- * 绿条说身体状态，墨条说每日目标，陶土条说上次调整依据。
- * 没有彩色大区块，靠一条 3px 色线分清层级。
+ * 印章头像开页；身体状态 / 每日目标 / 上次调整 / 本期建议各是一张便签贴纸：
+ * 暖白纸面 + 顶部胶带 + 轻微旋转，像粘在页面上，不再用左色条。
  */
 @Composable
 private fun ProfileLandingPage(
@@ -175,7 +175,10 @@ private fun ProfileLandingPage(
             )
 
             uiState.bodyStatus?.let { snapshot ->
-                BodyStatusNote(snapshot = snapshot)
+                BodyStatusNote(
+                    snapshot = snapshot,
+                    targetCalories = profile.dailyCaloricTarget
+                )
             }
 
             DailyTargetNote(
@@ -183,29 +186,11 @@ private fun ProfileLandingPage(
                 isAdaptive = uiState.isAdaptiveTarget
             )
 
-            if (uiState.adjustment.happened) {
-                AdjustmentNote(adjustment = uiState.adjustment)
-            }
+            // 两块始终显示；没发生过调整/建议时给出占位文案，让用户知道这块存在。
+            AdjustmentNote(adjustment = uiState.adjustment)
+            AdviceNote(advice = uiState.advice)
 
-            SectionHead(
-                title = "快捷入口",
-                latin = "SETTINGS",
-                modifier = Modifier.padding(top = 30.dp, bottom = 4.dp)
-            )
-            LinkRow(
-                title = "修改腰围",
-                subtitle = "随时可改，覆盖当日记录",
-                showDivider = true,
-                onClick = onOpenDetails
-            )
-            LinkRow(
-                title = "体重记录",
-                subtitle = "每天一次，用于趋势结算",
-                showDivider = false,
-                onClick = onOpenDetails
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -254,19 +239,19 @@ private fun ProfileHeadRow(
     }
 }
 
-/** 身体状态：绿条信息区，一句话结论 + 推断依据。 */
+/** 身体状态：便签块，一句话结论 + 推断依据。 */
 @Composable
-private fun BodyStatusNote(snapshot: BodyStatusSnapshot) {
+private fun BodyStatusNote(snapshot: BodyStatusSnapshot, targetCalories: Int) {
     val settledLine = if (snapshot.settledDay != null) {
         "每 ${snapshot.windowDays} 天结算一次，下次结算前保持不变"
     } else {
         "每 ${snapshot.windowDays} 天结算一次，已结算才会固定下来"
     }
 
-    NoteBlock(
-        ruleColor = MaterialTheme.colorScheme.primary,
+    StickyNote(
         tagColor = MaterialTheme.colorScheme.primary,
         tag = "身体状态 · 近 ${snapshot.windowDays} 天",
+        rotationDegrees = -0.8f,
         statement = {
             Text(
                 text = snapshot.status.label,
@@ -276,17 +261,17 @@ private fun BodyStatusNote(snapshot: BodyStatusSnapshot) {
             )
         },
         hint = snapshot.status.hint,
-        evidence = bodyStatusEvidence(snapshot) + "\n" + settledLine
+        evidence = bodyStatusEvidence(snapshot, targetCalories) + "\n" + settledLine
     )
 }
 
-/** 每日目标：墨条信息区，衬线大数字。 */
+/** 每日目标：便签块，衬线大数字。 */
 @Composable
 private fun DailyTargetNote(targetCalories: Int, isAdaptive: Boolean) {
-    NoteBlock(
-        ruleColor = MaterialTheme.colorScheme.onSurface,
-        tagColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    StickyNote(
+        tagColor = MaterialTheme.colorScheme.secondary,
         tag = "每日目标 · 自适应",
+        rotationDegrees = 0.7f,
         statement = {
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
@@ -311,90 +296,93 @@ private fun DailyTargetNote(targetCalories: Int, isAdaptive: Boolean) {
     )
 }
 
-/** 上次目标调整：陶土条信息区，回答「为什么目标变了」。 */
+/** 上次目标调整：便签块，回答「为什么目标变了」。没发生过调整时给占位。 */
 @Composable
 private fun AdjustmentNote(adjustment: CalorieAdjustment) {
     val sign = if (adjustment.delta > 0) "+" else ""
-    NoteBlock(
-        ruleColor = MaterialTheme.colorScheme.tertiary,
+    StickyNote(
         tagColor = MaterialTheme.colorScheme.tertiary,
-        tag = "上次目标调整 · ${formatEpochDay(adjustment.day)}",
+        tag = "上次目标调整 · ${if (adjustment.happened) formatEpochDay(adjustment.day) else "尚未发生"}",
+        rotationDegrees = -0.5f,
         statement = {
-            Row(verticalAlignment = Alignment.Bottom) {
+            if (adjustment.happened) {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = "${ledgerNumber(adjustment.beforeCalories)} → ${ledgerNumber(adjustment.afterCalories)}",
+                        style = JournalStatement,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "千卡（$sign${adjustment.delta}）",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.padding(start = 6.dp, bottom = 3.dp)
+                    )
+                }
+            } else {
                 Text(
-                    text = "${ledgerNumber(adjustment.beforeCalories)} → ${ledgerNumber(adjustment.afterCalories)}",
+                    text = "暂无调整记录",
+                    style = JournalStatement,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        hint = if (adjustment.happened) {
+            adjustment.reason
+        } else {
+            "目标由自适应引擎接管后，首次结算才会产生调整记录。"
+        }
+    )
+}
+
+/** 本期建议：便签块，回答「为什么这轮没有改热量目标」。没被拦下时给占位。 */
+@Composable
+private fun AdviceNote(advice: CalorieAdvice) {
+    StickyNote(
+        tagColor = MaterialTheme.colorScheme.primary,
+        tag = "本期建议 · ${if (advice.happened) formatEpochDay(advice.day) else "暂无"}",
+        rotationDegrees = 0.6f,
+        statement = {
+            if (advice.happened) {
+                Text(
+                    text = advice.adherencePercent?.let { "目标达成率 $it%" } ?: "先对齐摄入",
                     style = JournalStatement,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+            } else {
                 Text(
-                    text = "千卡（$sign${adjustment.delta}）",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.padding(start = 6.dp, bottom = 3.dp)
+                    text = "暂无建议",
+                    style = JournalStatement,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
-        hint = adjustment.reason
+        hint = if (advice.happened) {
+            advice.reason
+        } else {
+            "按目标吃且趋势正常时不会产生建议，继续保持即可。"
+        }
     )
 }
 
-/** 快捷入口行：标题 + 说明 + 右侧箭头，行间发丝线。 */
-@Composable
-private fun LinkRow(
-    title: String,
-    subtitle: String,
-    showDivider: Boolean,
-    onClick: () -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(vertical = 13.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-            Text(
-                text = "›",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Light,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        if (showDivider) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(MaterialTheme.colorScheme.hairline)
-            )
-        }
-    }
-}
-
-private fun bodyStatusEvidence(snapshot: BodyStatusSnapshot): String {
+private fun bodyStatusEvidence(snapshot: BodyStatusSnapshot, targetCalories: Int): String {
     val settled = snapshot.settledDay?.let { day ->
         "上次结算 ${formatEpochDay(day)}"
     } ?: "尚未结算"
 
+    // 日均摄入后面补一个「达成率」，让「实际吃没吃到目标」一眼可见。
     val intake = snapshot.averageIntake?.let {
-        "日均摄入 $it 千卡（估算消耗 ${snapshot.referenceTdee}）"
+        val adherence = if (targetCalories > 0) {
+            " · 达成率 ${(it.toFloat() / targetCalories * 100).roundToInt()}%"
+        } else {
+            ""
+        }
+        "日均摄入 $it 千卡（估算消耗 ${snapshot.referenceTdee}）$adherence"
     } ?: "饮食记录 ${snapshot.intakeDays} 天，暂不足"
 
     val weight = snapshot.weightChangeKg?.let { delta ->

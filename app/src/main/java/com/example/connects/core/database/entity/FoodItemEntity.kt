@@ -16,5 +16,8 @@ data class FoodItemEntity(
     val isCustom: Boolean = false,
     val isFavorite: Boolean = false,
     val lastUsedAt: Long = 0L,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    // 可选单份计量：如 1 颗 = 3.5g。两个都为空表示不启用。
+    val servingName: String? = null,
+    val servingGrams: Float? = null
 )

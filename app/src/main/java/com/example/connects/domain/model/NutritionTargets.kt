@@ -41,3 +41,19 @@ data class CalorieAdjustment(
     val delta: Int get() = afterCalories - beforeCalories
     val happened: Boolean get() = day > 0 && delta != 0
 }
+
+/**
+ * 本周期没有改目标、只给出执行建议时的结论。
+ *
+ * 与 [CalorieAdjustment] 分开存：改数字的结论要长期留着（回答「目标为什么变了」），
+ * 执行建议则是每个周期都会刷新的，两者互相覆盖会丢掉用户真正想回看的那条。
+ */
+data class CalorieAdvice(
+    /** 给出建议的当天（epochDay）；0 表示还没有建议。 */
+    val day: Int = 0,
+    val reason: String = "",
+    /** 日均摄入对目标的达成率（85 表示只吃到目标的 85%）；记录不足时为 null。 */
+    val adherencePercent: Int? = null
+) {
+    val happened: Boolean get() = day > 0 && reason.isNotBlank()
+}

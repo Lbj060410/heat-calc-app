@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -41,6 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -329,15 +332,28 @@ private fun FoodRow(
     }
 }
 
-/** 分量弹窗：纸感卡片 + 下划线输入 + 衬线大数字热量换算。 */
+/** 分量弹窗：纸感卡片 + 下划线输入 + 衬线大数字热量换算。
+ *  食物设了单份计量时支持按份数输入（份数 × 每份克数 = 克数）。 */
 @Composable
 private fun PortionDialog(
     food: HomeViewModel.QuickFoodItem,
     onDismiss: () -> Unit,
     onConfirm: (Float) -> Unit
 ) {
+    // 是否启用单份计量：单位名称和每份克数都有效才算。
+    val servingEnabled = food.servingName?.isNotBlank() == true &&
+        (food.servingGrams ?: 0f) > 0f
+    // 默认按份数输入；只在启用单份计量时才允许切到按克数。
+    var byServing by remember { mutableStateOf(true) }
     var gramsText by remember { mutableStateOf("100") }
-    val grams = gramsText.toFloatOrNull() ?: 0f
+    var servingCountText by remember { mutableStateOf("1") }
+
+    val servingGrams = food.servingGrams ?: 0f
+    val grams = if (servingEnabled && byServing) {
+        (servingCountText.toFloatOrNull() ?: 0f) * servingGrams
+    } else {
+        gramsText.toFloatOrNull() ?: 0f
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -354,19 +370,67 @@ private fun PortionDialog(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${food.name} · ${food.caloriesPer100g.roundToInt()} kcal/100g",
+                    text = "${food.name} · ${food.caloriesPer100g.roundToInt()} kcal/100g" +
+                        (if (servingEnabled) " · 每${food.servingName} ${formatServingGrams(servingGrams)}g" else ""),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)
                 )
 
-                JournalUnderlineField(
-                    label = "克数 · G",
-                    value = gramsText,
-                    onValueChange = { gramsText = it },
-                    placeholder = "100",
-                    modifier = Modifier.padding(top = 20.dp)
-                )
+                if (servingEnabled) {
+                    // 按份数 / 按克数 分段切换
+                    val segLine = MaterialTheme.colorScheme.hairline
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 18.dp)
+                            .drawBehind {
+                                drawLine(
+                                    color = segLine,
+                                    start = Offset(0f, size.height),
+                                    end = Offset(size.width, size.height),
+                                    strokeWidth = 1.dp.toPx()
+                                )
+                            }
+                    ) {
+                        ServingSegOption(
+                            text = "按份数",
+                            selected = byServing,
+                            onClick = { byServing = true }
+                        )
+                        ServingSegOption(
+                            text = "按克数",
+                            selected = !byServing,
+                            onClick = { byServing = false }
+                        )
+                    }
+                }
+
+                if (servingEnabled && byServing) {
+                    JournalUnderlineField(
+                        label = "份数 · ${food.servingName}",
+                        value = servingCountText,
+                        onValueChange = { servingCountText = it },
+                        placeholder = "1",
+                        modifier = Modifier.padding(top = 18.dp)
+                    )
+                    if (grams > 0f) {
+                        Text(
+                            text = "$grams g（${servingCountText} ${food.servingName} × ${formatServingGrams(servingGrams)} g）",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                } else {
+                    JournalUnderlineField(
+                        label = "克数 · G",
+                        value = gramsText,
+                        onValueChange = { gramsText = it },
+                        placeholder = "100",
+                        modifier = Modifier.padding(top = 18.dp)
+                    )
+                }
 
                 if (grams > 0f) {
                     Row(
@@ -422,6 +486,53 @@ private fun PortionDialog(
     }
 }
 
+/** 分段选项：选中时翡翠下划线 + 加粗，未选中灰色。 */
+@Composable
+private fun RowScope.ServingSegOption(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = text,
+                fontSize = 13.sp,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
+            )
+            if (selected) {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 3.dp)
+                        .width(20.dp)
+                        .height(2.dp)
+                        .background(MaterialTheme.colorScheme.primary)
+                )
+            }
+        }
+    }
+}
+
+/** 单份克数格式化：整数不带小数点，否则保留一位。 */
+private fun formatServingGrams(value: Float): String {
+    return if (value % 1f == 0f) {
+        value.toInt().toString()
+    } else {
+        String.format("%.1f", value)
+    }
+}
+
 /** 编辑自定义食物：纸感卡片 + 六个下划线输入 + 墨色保存。 */
 @Composable
 private fun EditCustomFoodDialog(
@@ -435,6 +546,10 @@ private fun EditCustomFoodDialog(
     var carbs by remember(initial.id) { mutableStateOf(initial.carbsPer100g.toString()) }
     var fat by remember(initial.id) { mutableStateOf(initial.fatPer100g.toString()) }
     var sodium by remember(initial.id) { mutableStateOf(initial.sodiumPer100g.toString()) }
+    var servingName by remember(initial.id) { mutableStateOf(initial.servingName ?: "") }
+    var servingGrams by remember(initial.id) {
+        mutableStateOf(initial.servingGrams?.let { formatServingGrams(it) } ?: "")
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -471,18 +586,12 @@ private fun EditCustomFoodDialog(
                     keyboardType = KeyboardType.Number,
                     textStyle = DialogFieldStyle
                 )
+                // 字段顺序对齐食品营养标签（能量 → 蛋白质 → 脂肪 → 碳水化合物 → 钠）
                 Spacer(modifier = Modifier.height(14.dp))
                 JournalUnderlineField(
                     label = "蛋白质 · G/100G",
                     value = protein,
                     onValueChange = { protein = it },
-                    textStyle = DialogFieldStyle
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                JournalUnderlineField(
-                    label = "碳水 · G/100G",
-                    value = carbs,
-                    onValueChange = { carbs = it },
                     textStyle = DialogFieldStyle
                 )
                 Spacer(modifier = Modifier.height(14.dp))
@@ -494,11 +603,46 @@ private fun EditCustomFoodDialog(
                 )
                 Spacer(modifier = Modifier.height(14.dp))
                 JournalUnderlineField(
+                    label = "碳水 · G/100G",
+                    value = carbs,
+                    onValueChange = { carbs = it },
+                    textStyle = DialogFieldStyle
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+                JournalUnderlineField(
                     label = "钠 · MG/100G",
                     value = sodium,
                     onValueChange = { sodium = it },
                     textStyle = DialogFieldStyle
                 )
+
+                Text(
+                    text = "单份计量 · 可选",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 2.sp,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(top = 22.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    JournalUnderlineField(
+                        label = "单位名称 · 颗/个/片…",
+                        value = servingName,
+                        onValueChange = { servingName = it },
+                        keyboardType = KeyboardType.Text,
+                        modifier = Modifier.weight(1f),
+                        textStyle = DialogFieldStyle
+                    )
+                    JournalUnderlineField(
+                        label = "每份克数 · G",
+                        value = servingGrams,
+                        onValueChange = { servingGrams = it },
+                        keyboardType = KeyboardType.Number,
+                        modifier = Modifier.weight(1f),
+                        textStyle = DialogFieldStyle
+                    )
+                }
 
                 Row(
                     modifier = Modifier
@@ -511,6 +655,7 @@ private fun EditCustomFoodDialog(
                     }
                     Button(
                         onClick = {
+                            val servingGramsValue = servingGrams.toFloatOrNull() ?: 0f
                             onSave(
                                 HomeViewModel.EditableFoodData(
                                     id = initial.id,
@@ -520,7 +665,12 @@ private fun EditCustomFoodDialog(
                                     proteinPer100g = protein.toFloatOrNull() ?: 0f,
                                     carbsPer100g = carbs.toFloatOrNull() ?: 0f,
                                     fatPer100g = fat.toFloatOrNull() ?: 0f,
-                                    sodiumPer100g = sodium.toFloatOrNull() ?: 0f
+                                    sodiumPer100g = sodium.toFloatOrNull() ?: 0f,
+                                    // 单位名称和每份克数都有效才算启用单份计量
+                                    servingName = servingName.trim().ifBlank { null },
+                                    servingGrams = if (servingName.isNotBlank() && servingGramsValue > 0f) {
+                                        servingGramsValue
+                                    } else null
                                 )
                             )
                         },

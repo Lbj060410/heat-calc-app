@@ -13,6 +13,7 @@ import com.example.connects.domain.model.AdaptiveTargetState
 import com.example.connects.domain.model.BodyStatus
 import com.example.connects.domain.model.BodyStatusSettlement
 import com.example.connects.domain.model.CalorieAdjustment
+import com.example.connects.domain.model.CalorieAdvice
 import com.example.connects.domain.model.MacroTargets
 import com.example.connects.domain.model.UserProfile
 import com.example.connects.domain.model.UserWaistLog
@@ -207,6 +208,12 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun saveCalorieAdjustment(adjustment: CalorieAdjustment) {
         userPreferences.saveCalorieAdjustment(adjustment)
+    }
+
+    override fun getCalorieAdvice(): Flow<CalorieAdvice> = userPreferences.calorieAdvice
+
+    override suspend fun saveCalorieAdvice(advice: CalorieAdvice) {
+        userPreferences.saveCalorieAdvice(advice)
     }
 
     private data class ProfileBasics(

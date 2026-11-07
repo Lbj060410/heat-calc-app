@@ -71,7 +71,10 @@ class HomeViewModel @Inject constructor(
         val proteinPer100g: Float,
         val carbsPer100g: Float,
         val fatPer100g: Float,
-        val sodiumPer100g: Float
+        val sodiumPer100g: Float,
+        // 可选单份计量：单位名称（颗/个…）+ 每份克数。都为空表示不启用。
+        val servingName: String? = null,
+        val servingGrams: Float? = null
     )
 
     data class FoodPickerUiState(
@@ -91,7 +94,9 @@ class HomeViewModel @Inject constructor(
         val proteinPer100g: Float = 0f,
         val carbsPer100g: Float = 0f,
         val fatPer100g: Float = 0f,
-        val sodiumPer100g: Float = 0f
+        val sodiumPer100g: Float = 0f,
+        val servingName: String? = null,
+        val servingGrams: Float? = null
     )
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -176,7 +181,9 @@ class HomeViewModel @Inject constructor(
                         carbsPer100g = data.carbs,
                         fatPer100g = data.fat,
                         sodiumPer100g = data.sodium,
-                        isCustom = true
+                        isCustom = true,
+                        servingName = data.servingName,
+                        servingGrams = data.servingGrams
                     )
                 )
 
@@ -191,7 +198,9 @@ class HomeViewModel @Inject constructor(
                 proteinPer100g = data.protein,
                 carbsPer100g = data.carbs,
                 fatPer100g = data.fat,
-                sodiumPer100g = data.sodium
+                sodiumPer100g = data.sodium,
+                servingName = data.servingName,
+                servingGrams = data.servingGrams
             )
             addFoodEntryFromQuickItem(quick, data.amountGrams, mealType)
         }
@@ -218,7 +227,9 @@ class HomeViewModel @Inject constructor(
                     proteinPer100g = data.proteinPer100g,
                     carbsPer100g = data.carbsPer100g,
                     fatPer100g = data.fatPer100g,
-                    sodiumPer100g = data.sodiumPer100g
+                    sodiumPer100g = data.sodiumPer100g,
+                    servingName = data.servingName,
+                    servingGrams = data.servingGrams
                 )
             )
         }
@@ -378,7 +389,9 @@ class HomeViewModel @Inject constructor(
             proteinPer100g = proteinPer100g,
             carbsPer100g = carbsPer100g,
             fatPer100g = fatPer100g,
-            sodiumPer100g = sodiumPer100g
+            sodiumPer100g = sodiumPer100g,
+            servingName = servingName,
+            servingGrams = servingGrams
         )
     }
 
@@ -496,6 +509,30 @@ class HomeViewModel @Inject constructor(
             FoodItem(name = "木耳(干)", category = FoodCategory.VEGETABLE, caloriesPer100g = 265f, proteinPer100g = 12.1f, carbsPer100g = 65.6f, fatPer100g = 1.5f, sodiumPer100g = 48.5f),
             FoodItem(name = "银耳(干)", category = FoodCategory.VEGETABLE, caloriesPer100g = 261f, proteinPer100g = 10f, carbsPer100g = 67.3f, fatPer100g = 1.4f, sodiumPer100g = 7f),
             FoodItem(name = "香菇(干)", category = FoodCategory.VEGETABLE, caloriesPer100g = 244f, proteinPer100g = 20f, carbsPer100g = 61.7f, fatPer100g = 1.8f, sodiumPer100g = 16f),
+            FoodItem(name = "包菜(卷心菜)", category = FoodCategory.VEGETABLE, caloriesPer100g = 22f, proteinPer100g = 1.2f, carbsPer100g = 4.6f, fatPer100g = 0.2f, sodiumPer100g = 27.2f),
+            FoodItem(name = "菠菜(带根)", category = FoodCategory.VEGETABLE, caloriesPer100g = 24f, proteinPer100g = 2.6f, carbsPer100g = 3.6f, fatPer100g = 0.3f, sodiumPer100g = 85f),
+            FoodItem(name = "芥菜头(大头菜)", category = FoodCategory.VEGETABLE, caloriesPer100g = 28f, proteinPer100g = 1.9f, carbsPer100g = 5.7f, fatPer100g = 0.2f, sodiumPer100g = 60f),
+            FoodItem(name = "香椿头", category = FoodCategory.VEGETABLE, caloriesPer100g = 47f, proteinPer100g = 1.7f, carbsPer100g = 10.9f, fatPer100g = 0.4f, sodiumPer100g = 5.7f),
+            FoodItem(name = "鱼腥草", category = FoodCategory.VEGETABLE, caloriesPer100g = 10f, proteinPer100g = 0.4f, carbsPer100g = 2.2f, fatPer100g = 0.1f, sodiumPer100g = 3f),
+            FoodItem(name = "马兰头", category = FoodCategory.VEGETABLE, caloriesPer100g = 25f, proteinPer100g = 2.5f, carbsPer100g = 4.6f, fatPer100g = 0.5f, sodiumPer100g = 52f),
+            FoodItem(name = "西洋菜(豆瓣菜)", category = FoodCategory.VEGETABLE, caloriesPer100g = 17f, proteinPer100g = 2.9f, carbsPer100g = 1.5f, fatPer100g = 0.5f, sodiumPer100g = 75f),
+            FoodItem(name = "茨菇", category = FoodCategory.VEGETABLE, caloriesPer100g = 94f, proteinPer100g = 4.6f, carbsPer100g = 18.5f, fatPer100g = 0.2f, sodiumPer100g = 5.2f),
+            FoodItem(name = "魔芋(块茎)", category = FoodCategory.VEGETABLE, caloriesPer100g = 7f, proteinPer100g = 0.1f, carbsPer100g = 1.2f, fatPer100g = 0.1f, sodiumPer100g = 3f),
+            FoodItem(name = "朝鲜蓟", category = FoodCategory.VEGETABLE, caloriesPer100g = 47f, proteinPer100g = 2.9f, carbsPer100g = 10.5f, fatPer100g = 0.2f, sodiumPer100g = 70f),
+            FoodItem(name = "马齿苋", category = FoodCategory.VEGETABLE, caloriesPer100g = 27f, proteinPer100g = 2.3f, carbsPer100g = 5.1f, fatPer100g = 0.5f, sodiumPer100g = 42f),
+            FoodItem(name = "榆钱", category = FoodCategory.VEGETABLE, caloriesPer100g = 45f, proteinPer100g = 3.8f, carbsPer100g = 8.8f, fatPer100g = 0.4f, sodiumPer100g = 5f),
+            FoodItem(name = "苦菊", category = FoodCategory.VEGETABLE, caloriesPer100g = 24f, proteinPer100g = 1.5f, carbsPer100g = 5.2f, fatPer100g = 0.3f, sodiumPer100g = 14f),
+            FoodItem(name = "雪里红", category = FoodCategory.VEGETABLE, caloriesPer100g = 25f, proteinPer100g = 1.9f, carbsPer100g = 4.6f, fatPer100g = 0.3f, sodiumPer100g = 360f),
+            FoodItem(name = "韭黄", category = FoodCategory.VEGETABLE, caloriesPer100g = 22f, proteinPer100g = 2.3f, carbsPer100g = 3.9f, fatPer100g = 0.2f, sodiumPer100g = 4.2f),
+            FoodItem(name = "蒜苗", category = FoodCategory.VEGETABLE, caloriesPer100g = 37f, proteinPer100g = 2.1f, carbsPer100g = 8.2f, fatPer100g = 0.1f, sodiumPer100g = 2.2f),
+            FoodItem(name = "蒜薹", category = FoodCategory.VEGETABLE, caloriesPer100g = 61f, proteinPer100g = 2.1f, carbsPer100g = 15.4f, fatPer100g = 0.1f, sodiumPer100g = 4.4f),
+            FoodItem(name = "豌豆苗", category = FoodCategory.VEGETABLE, caloriesPer100g = 28f, proteinPer100g = 3.1f, carbsPer100g = 4.6f, fatPer100g = 0.6f, sodiumPer100g = 2f),
+            FoodItem(name = "地耳(地皮菜)", category = FoodCategory.VEGETABLE, caloriesPer100g = 10f, proteinPer100g = 1.5f, carbsPer100g = 2.1f, fatPer100g = 0.2f, sodiumPer100g = 28.5f),
+            FoodItem(name = "海带结(水发)", category = FoodCategory.VEGETABLE, caloriesPer100g = 16f, proteinPer100g = 1.7f, carbsPer100g = 2.1f, fatPer100g = 0.3f, sodiumPer100g = 486f),
+            FoodItem(name = "裙带菜(干)", category = FoodCategory.VEGETABLE, caloriesPer100g = 367f, proteinPer100g = 25.7f, carbsPer100g = 60.1f, fatPer100g = 1.9f, sodiumPer100g = 4220f),
+            FoodItem(name = "酸菜", category = FoodCategory.VEGETABLE, caloriesPer100g = 15f, proteinPer100g = 1.1f, carbsPer100g = 2.3f, fatPer100g = 0.2f, sodiumPer100g = 43.2f),
+            FoodItem(name = "榨菜", category = FoodCategory.VEGETABLE, caloriesPer100g = 29f, proteinPer100g = 2.4f, carbsPer100g = 4.4f, fatPer100g = 0.4f, sodiumPer100g = 4240f),
+            FoodItem(name = "咸菜(酱菜)", category = FoodCategory.VEGETABLE, caloriesPer100g = 38f, proteinPer100g = 1.6f, carbsPer100g = 7.5f, fatPer100g = 0.3f, sodiumPer100g = 3740f),
 
             // ===== 肉/蛋/奶类 =====
             FoodItem(name = "鸡胸肉", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 133f, proteinPer100g = 19.4f, carbsPer100g = 0f, fatPer100g = 5f, sodiumPer100g = 34.4f),
@@ -563,6 +600,33 @@ class HomeViewModel @Inject constructor(
             FoodItem(name = "千张(百叶)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 260f, proteinPer100g = 24f, carbsPer100g = 5.6f, fatPer100g = 16f, sodiumPer100g = 40f),
             FoodItem(name = "素鸡", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 194f, proteinPer100g = 14f, carbsPer100g = 4.9f, fatPer100g = 13f, sodiumPer100g = 50f),
             FoodItem(name = "油豆腐", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 244f, proteinPer100g = 17f, carbsPer100g = 4.9f, fatPer100g = 17.4f, sodiumPer100g = 120f),
+            FoodItem(name = "章鱼(八爪鱼)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 52f, proteinPer100g = 10.6f, carbsPer100g = 1.4f, fatPer100g = 0.1f, sodiumPer100g = 74.2f),
+            FoodItem(name = "泥鳅", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 96f, proteinPer100g = 17.9f, carbsPer100g = 0.5f, fatPer100g = 2f, sodiumPer100g = 78.1f),
+            FoodItem(name = "黄鳝(鳝鱼)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 89f, proteinPer100g = 18f, carbsPer100g = 1.2f, fatPer100g = 0.7f, sodiumPer100g = 69f),
+            FoodItem(name = "甲鱼(水鱼)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 118f, proteinPer100g = 17.8f, carbsPer100g = 2.1f, fatPer100g = 4.3f, sodiumPer100g = 150f),
+            FoodItem(name = "河蚌", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 54f, proteinPer100g = 10.9f, carbsPer100g = 0.7f, fatPer100g = 0.5f, sodiumPer100g = 71f),
+            FoodItem(name = "田螺", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 60f, proteinPer100g = 11f, carbsPer100g = 1.5f, fatPer100g = 0.2f, sodiumPer100g = 232f),
+            FoodItem(name = "海螺(鲜)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 137f, proteinPer100g = 22.1f, carbsPer100g = 3.6f, fatPer100g = 2.3f, sodiumPer100g = 200f),
+            FoodItem(name = "火腿(熟)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 174f, proteinPer100g = 16.5f, carbsPer100g = 0.2f, fatPer100g = 11.4f, sodiumPer100g = 525f),
+            FoodItem(name = "腊肠", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 508f, proteinPer100g = 24.1f, carbsPer100g = 11.2f, fatPer100g = 39.1f, sodiumPer100g = 1420f),
+            FoodItem(name = "腊鸭", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 446f, proteinPer100g = 23.1f, carbsPer100g = 1.3f, fatPer100g = 39.3f, sodiumPer100g = 760f),
+            FoodItem(name = "三文鱼子", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 197f, proteinPer100g = 27f, carbsPer100g = 1.4f, fatPer100g = 8.2f, sodiumPer100g = 188f),
+            FoodItem(name = "鱼肚(干)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 395f, proteinPer100g = 78.5f, carbsPer100g = 2f, fatPer100g = 0.5f, sodiumPer100g = 60f),
+            FoodItem(name = "甲鱼裙边", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 237f, proteinPer100g = 30f, carbsPer100g = 0.3f, fatPer100g = 12.3f, sodiumPer100g = 45f),
+            FoodItem(name = "河虾", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 87f, proteinPer100g = 16.4f, carbsPer100g = 2f, fatPer100g = 2.4f, sodiumPer100g = 133.8f),
+            FoodItem(name = "竹节虾", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 93f, proteinPer100g = 18.6f, carbsPer100g = 1f, fatPer100g = 1.6f, sodiumPer100g = 165f),
+            FoodItem(name = "皮皮虾(虾蛄)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 81f, proteinPer100g = 11.6f, carbsPer100g = 4f, fatPer100g = 2.8f, sodiumPer100g = 133f),
+            FoodItem(name = "猪皮(鲜)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 363f, proteinPer100g = 27.3f, carbsPer100g = 0f, fatPer100g = 28.1f, sodiumPer100g = 48.8f),
+            FoodItem(name = "猪脑", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 131f, proteinPer100g = 10.8f, carbsPer100g = 2.2f, fatPer100g = 9.8f, sodiumPer100g = 130f),
+            FoodItem(name = "牛脑", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 149f, proteinPer100g = 12.5f, carbsPer100g = 1.2f, fatPer100g = 11.3f, sodiumPer100g = 184f),
+            FoodItem(name = "鸡肫(鸡胗)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 127f, proteinPer100g = 19.3f, carbsPer100g = 3.7f, fatPer100g = 3.6f, sodiumPer100g = 74f),
+            FoodItem(name = "鸭肫(鸭胗)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 92f, proteinPer100g = 17.2f, carbsPer100g = 1f, fatPer100g = 2.6f, sodiumPer100g = 69f),
+            FoodItem(name = "鹅肝", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 129f, proteinPer100g = 15.1f, carbsPer100g = 2.8f, fatPer100g = 5.8f, sodiumPer100g = 71.5f),
+            FoodItem(name = "鹌鹑", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 110f, proteinPer100g = 21.2f, carbsPer100g = 0.3f, fatPer100g = 3.1f, sodiumPer100g = 57f),
+            FoodItem(name = "鸽子", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 201f, proteinPer100g = 16.5f, carbsPer100g = 1.5f, fatPer100g = 14.2f, sodiumPer100g = 50f),
+            FoodItem(name = "鱿鱼(干)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 319f, proteinPer100g = 60f, carbsPer100g = 6f, fatPer100g = 4.6f, sodiumPer100g = 190f),
+            FoodItem(name = "海胆(鲜)", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 114f, proteinPer100g = 11.6f, carbsPer100g = 4.1f, fatPer100g = 5.3f, sodiumPer100g = 180f),
+            FoodItem(name = "蚕蛹", category = FoodCategory.MEAT_DAIRY, caloriesPer100g = 230f, proteinPer100g = 21.5f, carbsPer100g = 6.8f, fatPer100g = 13f, sodiumPer100g = 80f),
 
             // ===== 水果类 =====
             FoodItem(name = "苹果", category = FoodCategory.FRUIT, caloriesPer100g = 53f, proteinPer100g = 0.3f, carbsPer100g = 13.5f, fatPer100g = 0.2f, sodiumPer100g = 1.6f),
@@ -593,6 +657,27 @@ class HomeViewModel @Inject constructor(
             FoodItem(name = "无花果", category = FoodCategory.FRUIT, caloriesPer100g = 59f, proteinPer100g = 1.5f, carbsPer100g = 13f, fatPer100g = 0.3f, sodiumPer100g = 3f),
             FoodItem(name = "桑葚", category = FoodCategory.FRUIT, caloriesPer100g = 49f, proteinPer100g = 1.7f, carbsPer100g = 13.8f, fatPer100g = 0.4f, sodiumPer100g = 2f),
             FoodItem(name = "甘蔗", category = FoodCategory.FRUIT, caloriesPer100g = 55f, proteinPer100g = 0.4f, carbsPer100g = 13.8f, fatPer100g = 0.1f, sodiumPer100g = 2f),
+            FoodItem(name = "柿子(甜柿)", category = FoodCategory.FRUIT, caloriesPer100g = 74f, proteinPer100g = 0.4f, carbsPer100g = 18.5f, fatPer100g = 0.1f, sodiumPer100g = 2.1f),
+            FoodItem(name = "脆柿", category = FoodCategory.FRUIT, caloriesPer100g = 71f, proteinPer100g = 0.7f, carbsPer100g = 17.2f, fatPer100g = 0.1f, sodiumPer100g = 4.1f),
+            FoodItem(name = "柿饼", category = FoodCategory.FRUIT, caloriesPer100g = 255f, proteinPer100g = 2.4f, carbsPer100g = 65.8f, fatPer100g = 0.1f, sodiumPer100g = 10.5f),
+            FoodItem(name = "山楂", category = FoodCategory.FRUIT, caloriesPer100g = 95f, proteinPer100g = 3.2f, carbsPer100g = 23.6f, fatPer100g = 0.2f, sodiumPer100g = 5.4f),
+            FoodItem(name = "柠檬", category = FoodCategory.FRUIT, caloriesPer100g = 35f, proteinPer100g = 1.1f, carbsPer100g = 6.2f, fatPer100g = 1.2f, sodiumPer100g = 1.1f),
+            FoodItem(name = "青柠", category = FoodCategory.FRUIT, caloriesPer100g = 30f, proteinPer100g = 1.2f, carbsPer100g = 5.4f, fatPer100g = 0.3f, sodiumPer100g = 2f),
+            FoodItem(name = "百香果", category = FoodCategory.FRUIT, caloriesPer100g = 69f, proteinPer100g = 2.5f, carbsPer100g = 16.2f, fatPer100g = 0.4f, sodiumPer100g = 2.8f),
+            FoodItem(name = "木瓜", category = FoodCategory.FRUIT, caloriesPer100g = 39f, proteinPer100g = 0.6f, carbsPer100g = 9.2f, fatPer100g = 0.1f, sodiumPer100g = 1.2f),
+            FoodItem(name = "番石榴(芭乐)", category = FoodCategory.FRUIT, caloriesPer100g = 53f, proteinPer100g = 1.1f, carbsPer100g = 14.3f, fatPer100g = 0.2f, sodiumPer100g = 4.2f),
+            FoodItem(name = "沙棘", category = FoodCategory.FRUIT, caloriesPer100g = 120f, proteinPer100g = 2.4f, carbsPer100g = 25.6f, fatPer100g = 0.8f, sodiumPer100g = 6f),
+            FoodItem(name = "酸枣(鲜)", category = FoodCategory.FRUIT, caloriesPer100g = 78f, proteinPer100g = 1.2f, carbsPer100g = 19.3f, fatPer100g = 0.2f, sodiumPer100g = 6f),
+            FoodItem(name = "桂圆(鲜)", category = FoodCategory.FRUIT, caloriesPer100g = 71f, proteinPer100g = 1.2f, carbsPer100g = 16.5f, fatPer100g = 0.1f, sodiumPer100g = 3.9f),
+            FoodItem(name = "桂圆(干)", category = FoodCategory.FRUIT, caloriesPer100g = 293f, proteinPer100g = 5.5f, carbsPer100g = 77.4f, fatPer100g = 0.6f, sodiumPer100g = 2.2f),
+            FoodItem(name = "橘子(蜜橘)", category = FoodCategory.FRUIT, caloriesPer100g = 41f, proteinPer100g = 0.9f, carbsPer100g = 9.1f, fatPer100g = 0.1f, sodiumPer100g = 1.3f),
+            FoodItem(name = "金橘", category = FoodCategory.FRUIT, caloriesPer100g = 58f, proteinPer100g = 1.3f, carbsPer100g = 15.9f, fatPer100g = 0.2f, sodiumPer100g = 3.2f),
+            FoodItem(name = "沙果", category = FoodCategory.FRUIT, caloriesPer100g = 66f, proteinPer100g = 0.4f, carbsPer100g = 17.4f, fatPer100g = 0.1f, sodiumPer100g = 1.3f),
+            FoodItem(name = "海棠果", category = FoodCategory.FRUIT, caloriesPer100g = 73f, proteinPer100g = 0.3f, carbsPer100g = 19.2f, fatPer100g = 0.2f, sodiumPer100g = 0.9f),
+            FoodItem(name = "椰子肉", category = FoodCategory.FRUIT, caloriesPer100g = 241f, proteinPer100g = 4f, carbsPer100g = 25.5f, fatPer100g = 12.1f, sodiumPer100g = 47.6f),
+            FoodItem(name = "椰汁", category = FoodCategory.FRUIT, caloriesPer100g = 21f, proteinPer100g = 0.8f, carbsPer100g = 4.7f, fatPer100g = 0.1f, sodiumPer100g = 5.5f),
+            FoodItem(name = "火龙果(白心)", category = FoodCategory.FRUIT, caloriesPer100g = 51f, proteinPer100g = 1.1f, carbsPer100g = 12.3f, fatPer100g = 0.2f, sodiumPer100g = 2.7f),
+            FoodItem(name = "火龙果(红心)", category = FoodCategory.FRUIT, caloriesPer100g = 55f, proteinPer100g = 1.3f, carbsPer100g = 13.4f, fatPer100g = 0.2f, sodiumPer100g = 2.7f),
 
             // ===== 零食类 =====
             FoodItem(name = "饼干", category = FoodCategory.SNACK, caloriesPer100g = 433f, proteinPer100g = 6.6f, carbsPer100g = 71.7f, fatPer100g = 13.6f, sodiumPer100g = 204f),

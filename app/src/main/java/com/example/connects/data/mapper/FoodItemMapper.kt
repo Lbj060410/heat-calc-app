@@ -28,7 +28,9 @@ class FoodItemMapper @Inject constructor() {
             isCustom = entity.isCustom,
             isFavorite = entity.isFavorite,
             lastUsedAt = entity.lastUsedAt,
-            createdAt = entity.createdAt
+            createdAt = entity.createdAt,
+            servingName = entity.servingName,
+            servingGrams = entity.servingGrams
         )
     }
 
@@ -66,7 +68,9 @@ class FoodItemMapper @Inject constructor() {
             isCustom = domain.isCustom,
             isFavorite = domain.isFavorite,
             lastUsedAt = domain.lastUsedAt,
-            createdAt = domain.createdAt
+            createdAt = domain.createdAt,
+            servingName = domain.servingName,
+            servingGrams = domain.servingGrams
         )
     }
 

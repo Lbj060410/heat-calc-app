@@ -20,17 +20,32 @@ enum class ActivityLevel(
     val audience: ActivityAudience
 ) {
     // 健身人群（默认受众）
-    GYM_BEGINNER(1.5f, "健身入门", "每周规律力量训练 2-3 次，其余时间以久坐为主", ActivityAudience.FITNESS),
-    GYM_INTERMEDIATE(1.65f, "健身进阶", "每周力量训练 4-5 次，训练强度中等", ActivityAudience.FITNESS),
-    GYM_ADVANCED(1.8f, "健身达人", "每周力量训练 6 次以上，或训练量很大", ActivityAudience.FITNESS),
+    GYM_BEGINNER(1.5f, "健身入门",
+        "每周力量训练 2-3 次，每次 30-60 分钟，使用中低重量、能完整说话；其余 4-5 天以久坐为主，日均步数 < 5000 步",
+        ActivityAudience.FITNESS),
+    GYM_INTERMEDIATE(1.65f, "健身进阶",
+        "每周力量训练 4-5 次，每次 60-90 分钟，中等强度（组间休息 60-90 秒、最后 2-3 次较吃力）；日均步数 5000-8000 步",
+        ActivityAudience.FITNESS),
+    GYM_ADVANCED(1.8f, "健身达人",
+        "每周力量训练 6 次以上，每次 90 分钟以上，或每周总训练量 ≥ 10 小时；常有大重量/高强度组，日均步数 > 8000 步",
+        ActivityAudience.FITNESS),
 
     // 大众（非健身人群，按整体活动量）
-    SEDENTARY(1.2f, "久坐", "几乎不运动，大部分时间坐着（如：办公室职员）", ActivityAudience.GENERAL),
-    LIGHTLY_ACTIVE(1.375f, "轻度活动", "每周运动 1-3 天，或有轻体力劳动", ActivityAudience.GENERAL),
-    MODERATELY_ACTIVE(1.55f, "中度活动", "每周运动 3-5 天，或有中等强度劳动", ActivityAudience.GENERAL),
-    VERY_ACTIVE(1.725f, "高度活动", "每周运动 6-7 天，或有重体力劳动", ActivityAudience.GENERAL),
-    EXTRA_ACTIVE(1.9f, "极度活动", "每天专业训练，或从事极高强度劳动（如：运动员、搬运工）", ActivityAudience.GENERAL);
-
+    SEDENTARY(1.2f, "久坐",
+        "几乎不运动；每天坐着 ≥ 8 小时，日均步数 < 3000 步，每周中等强度运动 0 次",
+        ActivityAudience.GENERAL),
+    LIGHTLY_ACTIVE(1.375f, "轻度活动",
+        "每周运动 1-3 天，每次 20-40 分钟；或轻体力劳动（如偶尔站立、走动）；日均步数 3000-6000 步",
+        ActivityAudience.GENERAL),
+    MODERATELY_ACTIVE(1.55f, "中度活动",
+        "每周运动 3-5 天，每次 30-60 分钟，中等强度（微微出汗、能说话但不能唱歌）；或中等强度劳动；日均步数 6000-10000 步",
+        ActivityAudience.GENERAL),
+    VERY_ACTIVE(1.725f, "高度活动",
+        "每周运动 6-7 天，每次 45-90 分钟，中高强度；或重体力劳动（频繁搬抬、爬楼）；日均步数 10000-15000 步",
+        ActivityAudience.GENERAL),
+    EXTRA_ACTIVE(1.9f, "极度活动",
+        "每天专业训练 ≥ 2 小时，或从事极高强度劳动（如运动员、搬运工、建筑工）；日均步数 > 15000 步，常有心率明显升高的大强度活动",
+        ActivityAudience.GENERAL);
     /** 保存到 DataStore 用的字符串，务必用这个而不是自己拼 name。 */
     val storageKey: String get() = name.lowercase()
 
