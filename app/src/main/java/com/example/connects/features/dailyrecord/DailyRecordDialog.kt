@@ -157,6 +157,8 @@ fun DailyRecordDialog(viewModel: DailyRecordViewModel) {
                 }
 
                 // 只跳过本次会话，不记录数据；下次进入应用会重新弹出提醒。
+                // 注意：按钮文案不要出现「跳过」二字，否则会被手机上的
+                // 「跳过广告」类无障碍服务自动点击，导致弹窗一闪而过。
                 TextButton(
                     onClick = viewModel::skip,
                     modifier = Modifier
@@ -165,7 +167,7 @@ fun DailyRecordDialog(viewModel: DailyRecordViewModel) {
                     enabled = !uiState.isSaving
                 ) {
                     Text(
-                        text = "跳过，下次再说",
+                        text = "暂不记录",
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -173,9 +175,9 @@ fun DailyRecordDialog(viewModel: DailyRecordViewModel) {
 
                 Text(
                     text = if (showWaist) {
-                        "跳过仅本次有效 · 腰围每 15 天提醒一次"
+                        "暂不记录仅本次有效 · 腰围每 15 天提醒一次"
                     } else {
-                        "跳过仅本次有效，下次进入应用会重新提醒"
+                        "暂不记录仅本次有效，下次进入应用会重新提醒"
                     },
                     fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
