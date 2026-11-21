@@ -105,18 +105,41 @@ class HomeViewModel @Inject constructor(
     private val _foodPickerUiState = MutableStateFlow(FoodPickerUiState())
     val foodPickerUiState: StateFlow<FoodPickerUiState> = _foodPickerUiState.asStateFlow()
 
+    // FoodPicker 和 AddFoodDialog 的可见状态 —— 放在 ViewModel 里防止 HomeScreen
+    // composition 意外重建时把本地 remember 状态清零（那是弹窗闪一下就消失的根因）。
+    private val _isFoodPickerOpen = MutableStateFlow(false)
+    val isFoodPickerOpen: StateFlow<Boolean> = _isFoodPickerOpen.asStateFlow()
+
+    private val _isCustomAddDialogOpen = MutableStateFlow(false)
+    val isCustomAddDialogOpen: StateFlow<Boolean> = _isCustomAddDialogOpen.asStateFlow()
+
+    private var foodsObserved = false
+
     init {
         observeDashboard()
         observeFoodPickerItems()
     }
 
-    fun prepareFoodPicker(mealType: String) {
+    fun openFoodPicker(mealType: String) {
         _foodPickerUiState.value = _foodPickerUiState.value.copy(
             mealType = MealType.labelOf(mealType),
             searchQuery = "",
             selectedCategory = FoodCategory.ALL
         )
         applyFoodFilters()
+        _isFoodPickerOpen.value = true
+    }
+
+    fun closeFoodPicker() {
+        _isFoodPickerOpen.value = false
+    }
+
+    fun openCustomAddDialog() {
+        _isCustomAddDialogOpen.value = true
+    }
+
+    fun closeCustomAddDialog() {
+        _isCustomAddDialogOpen.value = false
     }
 
     fun onFoodSearchQueryChange(query: String) {
@@ -324,8 +347,15 @@ class HomeViewModel @Inject constructor(
     private fun observeFoodPickerItems() {
         viewModelScope.launch {
             foodRepository.getAllFoodItems().collect { foods ->
-                val all = ensurePresetFoods(foods)
-                val quickItems = all.map { it.toQuickItem() }
+                // ensurePresetFoods 只在第一次 collect 时执行一次，后续 Room 的
+                // 正常发射（用户增删食物等）不再重复查缺补漏，避免多余抖动。
+                val effective = if (!foodsObserved) {
+                    foodsObserved = true
+                    ensurePresetFoods(foods)
+                } else {
+                    foods
+                }
+                val quickItems = effective.map { it.toQuickItem() }
                 _foodPickerUiState.value = _foodPickerUiState.value.copy(
                     allFoods = quickItems,
                     isLoading = false

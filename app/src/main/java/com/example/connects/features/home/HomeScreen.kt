@@ -62,25 +62,24 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val pickerState by viewModel.foodPickerUiState.collectAsState()
-    var showCustomAddDialog by remember { mutableStateOf(false) }
-    var selectedMealType by remember { mutableStateOf(MealType.BREAKFAST.label) }
-    var showFoodPicker by remember { mutableStateOf(false) }
+    val showFoodPicker by viewModel.isFoodPickerOpen.collectAsState()
+    val showCustomAddDialog by viewModel.isCustomAddDialogOpen.collectAsState()
 
     // 系统返回键：先关掉食物选择页，而不是直接退出应用。
     // 上层弹窗（分量 / 自定义食物）是 Dialog，自带返回关闭，不经过这里。
     BackHandler(enabled = showFoodPicker) {
-        showFoodPicker = false
+        viewModel.closeFoodPicker()
     }
 
     if (showCustomAddDialog) {
         AddFoodDialog(
             knownFoods = pickerState.allFoods,
             onDismiss = {
-                showCustomAddDialog = false
+                viewModel.closeCustomAddDialog()
             },
             onSave = { data ->
-                viewModel.addCustomFoodAndEntry(data, selectedMealType)
-                showCustomAddDialog = false
+                viewModel.addCustomFoodAndEntry(data, pickerState.mealType)
+                viewModel.closeCustomAddDialog()
             }
         )
     }
@@ -88,9 +87,9 @@ fun HomeScreen(
     if (showFoodPicker) {
         FoodPickerScreen(
             viewModel = viewModel,
-            onBack = { showFoodPicker = false },
+            onBack = { viewModel.closeFoodPicker() },
             onCreateFoodClick = {
-                showCustomAddDialog = true
+                viewModel.openCustomAddDialog()
             }
         )
         return
@@ -139,9 +138,7 @@ fun HomeScreen(
                     entries = entries,
                     showDivider = index > 0,
                     onClick = {
-                        selectedMealType = meal.label
-                        viewModel.prepareFoodPicker(meal.label)
-                        showFoodPicker = true
+                        viewModel.openFoodPicker(meal.label)
                     }
                 )
             }
@@ -150,9 +147,7 @@ fun HomeScreen(
                 text = "＋ 添加食物",
                 modifier = Modifier.padding(top = 16.dp),
                 onClick = {
-                    selectedMealType = MealType.SNACK.label
-                    viewModel.prepareFoodPicker(MealType.SNACK.label)
-                    showFoodPicker = true
+                    viewModel.openFoodPicker(MealType.SNACK.label)
                 }
             )
 
