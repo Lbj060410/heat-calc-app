@@ -16,18 +16,20 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * 到期时结算一次身体状态，并把结论固定写进本地存储。
+ * 到期时评估身体状态（7 天一次）并推进自适应热量引擎（15 天一次）。
  *
- * 「固定结算」的含义：结论一旦写入，此后 [CalculateBodyStatusUseCase.WINDOW_DAYS] 天内不再变化，
- * 即使中途体重或饮食数据变了也不会改，直到下一个结算日才重新评估。
+ * 评估与调整解耦：
+ *  - 评估：每 [CalculateBodyStatusUseCase.ASSESS_WINDOW_DAYS] 天刷新一次身体状态标签、
+ *    TDEE 估算与执行建议，但不改热量目标。
+ *  - 调整：每 [CalculateBodyStatusUseCase.ADJUST_WINDOW_DAYS] 天评估一次热量目标，
+ *    满 1 个月后交给自适应引擎改数字。
+ *
+ * 体重趋势用更长历史（[CalculateBodyStatusUseCase.TREND_WINDOW_DAYS] 天）拟合，
+ * 趋势更稳；饮食与腰围仍按 15 天窗口。
  *
  * 例外：结果为「数据不足」时不写入、也不开始倒计时。否则新用户刚装上 App 就被
- * 「数据不足」锁满 15 天，即使第 3 天就有足够数据也不会更新。
+ * 「数据不足」锁满一个周期，即使第 3 天就有足够数据也不会更新。
  *
- * 结算成功后顺带推进自适应热量引擎：
- *   1. 用「摄入 − 体重变化」反推真实每日消耗并落盘；
- *   2. 从「正式记录的第一天」起满 1 个月后，按目标和实测趋势调整热量与营养素，
- *      之后每个 15 天周期跟着结算一起调整（与身体状态同频）。
  * 第一个月严格用公式值，让数据先攒够再交给引擎。
  *
  * 「读结算 → 计算 → 写结算」不是原子操作，若被并发调用会让同一个周期被调整两次
@@ -55,14 +57,22 @@ class RefreshBodyStatusUseCase @Inject constructor(
     }
 
     private suspend fun refresh(today: Int) {
+        // 评估（7 天）与热量调整（15 天）两个周期独立判断，任一到期就进入计算。
         val settlement = userRepository.getBodyStatusSettlement().first()
-        val isDue = settlement.settledDay <= 0 ||
-            today - settlement.settledDay >= CalculateBodyStatusUseCase.WINDOW_DAYS
-        if (!isDue) return
+        val assessDue = settlement.settledDay <= 0 ||
+            today - settlement.settledDay >= CalculateBodyStatusUseCase.ASSESS_WINDOW_DAYS
+
+        val lastAdjustEvalDay = userRepository.getLastAdjustEvalDay().first()
+        val adjustDue = lastAdjustEvalDay <= 0 ||
+            today - lastAdjustEvalDay >= CalculateBodyStatusUseCase.ADJUST_WINDOW_DAYS
+
+        if (!assessDue && !adjustDue) return
 
         val profile = userRepository.getUserProfile().first()
+        // 体重趋势用更长的 60 天历史拟合（更稳），饮食和腰围仍按 15 天窗口。
+        val weightWindowStart = today - (CalculateBodyStatusUseCase.TREND_WINDOW_DAYS - 1)
         val windowStart = today - (CalculateBodyStatusUseCase.WINDOW_DAYS - 1)
-        val weightLogs = userRepository.getWeightLogsBetween(windowStart, today).first()
+        val weightLogs = userRepository.getWeightLogsBetween(weightWindowStart, today).first()
         val foodEntries = foodRepository.getEntriesByDateRange(windowStart, today).first()
 
         // 腰围按「上个周期期末 -> 本周期期末」比较，所以基线取窗口开始之前的最后一条。
@@ -98,19 +108,25 @@ class RefreshBodyStatusUseCase @Inject constructor(
             weightSamples = snapshot.weightSamples,
             formulaTdee = formulaTdee
         )
-        if (newEstimate != null) userRepository.saveEstimatedTdee(newEstimate)
+        // 评估：每 7 天刷新身体状态与 TDEE 估算，但不动热量目标。
+        if (assessDue) {
+            if (newEstimate != null) userRepository.saveEstimatedTdee(newEstimate)
+            userRepository.saveBodyStatusSettlement(snapshot.status, today)
+        }
 
-        userRepository.saveBodyStatusSettlement(snapshot.status, today)
-
-        // 自适应引擎是附加能力：它出错不该连累已经算好的身体状态结算，
-        // 也不该把错误抛到「我的」页让用户看到一句莫名其妙的报错。
-        runCatching {
-            adjustIfEligible(
-                today = today,
-                profile = profile,
-                snapshot = snapshot,
-                estimatedTdee = newEstimate
-            )
+        // 调整：每 15 天评估一次热量目标（满 1 个月后交给自适应引擎）。
+        // 自适应引擎是附加能力：它出错不该连累已经算好的身体状态结算。
+        if (adjustDue) {
+            runCatching {
+                adjustIfEligible(
+                    today = today,
+                    profile = profile,
+                    snapshot = snapshot,
+                    estimatedTdee = newEstimate
+                )
+            }
+            // 无论本轮是否真的改了数字，都记录「已评估过调整」，15 天后才会再评估。
+            userRepository.saveLastAdjustEvalDay(today)
         }
     }
 

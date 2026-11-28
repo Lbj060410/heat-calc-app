@@ -5,7 +5,11 @@ import com.example.connects.domain.model.WeightMeasurementContext
 import javax.inject.Inject
 
 /**
- * 用「加权 Theil-Sen」计算体重随时间的变化，返回观察区间内的「拟合变化量」（kg）。
+ * 用「加权 Theil-Sen」计算体重随时间的变化，返回「每 [PERIOD_DAYS] 天」的拟合变化量（kg）。
+ *
+ * 趋势用传入的全部样本拟合每日斜率，但返回值固定归一化到每 15 天：调用方可以放心
+ * 喂给它更长历史（比如 60 天）的体重点让趋势更稳，而下游的速率阈值（减脂 0.6%/周期）
+ * 不需要跟着窗口长度改量纲。
  *
  * 该方法把两类需求合并成一个估计器：
  * - **抗离群**：取所有点对斜率的中位数而不是均值，个别虚高的夜秤/水分波动点不会撬偏趋势
@@ -39,7 +43,10 @@ class CalculateWeightTrendUseCase @Inject constructor() {
         }
 
         val slopePerDay = weightedMedianSlope(slopes) ?: return null
-        return (slopePerDay * span).toFloat()
+        // 趋势拟合可以用更长历史（样本更多、更抗波动），但返回值统一归一化到
+        // 「每 PERIOD_DAYS 天」的变化量，让下游的速率阈值（减脂 0.6%/周期等）
+        // 保持量纲一致，不用跟着拟合窗口的长度变。
+        return (slopePerDay * PERIOD_DAYS).toFloat()
     }
 
     /** 按时段给置信权重（用户排定：晨起空腹最高，其余从高到低为 其他 > 练后 > 餐后）。
@@ -68,5 +75,8 @@ class CalculateWeightTrendUseCase @Inject constructor() {
 
     private companion object {
         const val MIN_SAMPLES = 2
+
+        /** 返回值归一化到「每多少天」的变化量，与下游速率阈值（减脂 0.6%/周期）对齐。 */
+        const val PERIOD_DAYS = 15
     }
 }

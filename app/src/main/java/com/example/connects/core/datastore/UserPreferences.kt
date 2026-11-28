@@ -48,6 +48,9 @@ class UserPreferences(private val context: Context) {
         val KEY_LAST_ADJUST_DIRECTION = stringPreferencesKey("last_adjust_direction")
         val KEY_LAST_ADJUST_RUN = intPreferencesKey("last_adjust_run")
 
+        /** 上次「热量调整评估」的日期（15 天一次，无论是否真的改了数字都记）。 */
+        val KEY_LAST_ADJUST_EVAL_DAY = intPreferencesKey("last_adjust_eval_day")
+
         /** 本周期「只给建议、没改目标」的记录（依从性偏离时产生）。 */
         val KEY_ADVICE_DAY = intPreferencesKey("calorie_advice_day")
         val KEY_ADVICE_REASON = stringPreferencesKey("calorie_advice_reason")
@@ -238,6 +241,16 @@ class UserPreferences(private val context: Context) {
             preferences[KEY_LAST_ADJUST_BEFORE] = adjustment.beforeCalories
             preferences[KEY_LAST_ADJUST_AFTER] = adjustment.afterCalories
             preferences[KEY_LAST_ADJUST_REASON] = adjustment.reason
+        }
+    }
+
+    /** 上次「热量调整评估」日；从未评估过时为 0。与「是否真改数字」无关。 */
+    val lastAdjustEvalDay: Flow<Int> = context.dataStore.data
+        .map { it[KEY_LAST_ADJUST_EVAL_DAY] ?: 0 }
+
+    suspend fun saveLastAdjustEvalDay(day: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_LAST_ADJUST_EVAL_DAY] = day
         }
     }
 

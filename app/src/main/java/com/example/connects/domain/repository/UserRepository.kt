@@ -80,6 +80,11 @@ interface UserRepository {
 
     suspend fun saveCalorieAdjustment(adjustment: CalorieAdjustment)
 
+    /** 上次「热量调整评估」日（15 天一次，与是否真改数字无关）。 */
+    fun getLastAdjustEvalDay(): Flow<Int>
+
+    suspend fun saveLastAdjustEvalDay(day: Int)
+
     /** 本周期「只给建议、没改目标」的结论（依从性偏离时产生）。 */
     fun getCalorieAdvice(): Flow<CalorieAdvice>
 

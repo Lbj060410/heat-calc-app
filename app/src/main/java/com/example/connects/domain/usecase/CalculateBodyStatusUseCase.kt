@@ -116,8 +116,17 @@ class CalculateBodyStatusUseCase @Inject constructor(
     }
 
     companion object {
-        /** 每 15 天为一个对比窗口，同时也是「必填一次腰围」的间隔。 */
+        /** 变化量的「量纲周期」：体重趋势、TDEE 反推都按「每 15 天」计，腰围也每 15 天必填一次。 */
         const val WINDOW_DAYS = 15
+
+        /** 身体状态评估周期：每 7 天刷新一次状态与建议，但不改热量。 */
+        const val ASSESS_WINDOW_DAYS = 7
+
+        /** 热量目标调整周期：每 15 天才改一次目标数字。 */
+        const val ADJUST_WINDOW_DAYS = 15
+
+        /** 体重趋势拟合的历史窗口：拉最近 60 天的体重点一起回归，趋势更稳。 */
+        const val TREND_WINDOW_DAYS = 60
 
         /** 窗口内体重变化不超过这个值就算「基本没变」。 */
         private const val WEIGHT_STABLE_KG = 0.5f

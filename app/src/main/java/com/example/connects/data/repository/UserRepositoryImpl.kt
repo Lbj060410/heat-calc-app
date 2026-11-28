@@ -210,6 +210,12 @@ class UserRepositoryImpl @Inject constructor(
         userPreferences.saveCalorieAdjustment(adjustment)
     }
 
+    override fun getLastAdjustEvalDay(): Flow<Int> = userPreferences.lastAdjustEvalDay
+
+    override suspend fun saveLastAdjustEvalDay(day: Int) {
+        userPreferences.saveLastAdjustEvalDay(day)
+    }
+
     override fun getCalorieAdvice(): Flow<CalorieAdvice> = userPreferences.calorieAdvice
 
     override suspend fun saveCalorieAdvice(advice: CalorieAdvice) {
