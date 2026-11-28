@@ -63,6 +63,15 @@ class AdjustCalorieTargetUseCase @Inject constructor() {
         val rate = if (weightKg > 0f) weightChangeKg / weightKg else 0f
         val bmi = if (heightCm > 0f) weightKg / ((heightCm / 100f) * (heightCm / 100f)) else 0f
 
+        // 意图与实测冲突：减脂却涨重、增肌却掉重、维持却明显偏离。
+        // 这是「目标偏高/偏低」的最强证据（真实消耗被高/低估了），此时相信实测调整目标，
+        // 不再用「欠吃/超吃」闸门拦截 —— 否则会陷入「目标偏高 → 劝你补到目标 → 补足更胖」的死循环。
+        val intentConflictsWithMeasurement = when (goal) {
+            "lose" -> weightChangeKg >= WEIGHT_STABLE_KG
+            "gain" -> weightChangeKg <= -WEIGHT_STABLE_KG
+            else -> weightChangeKg >= WEIGHT_STABLE_KG || weightChangeKg <= -WEIGHT_STABLE_KG
+        }
+
         var delta = 0
         var reason = ""
 
@@ -79,7 +88,11 @@ class AdjustCalorieTargetUseCase @Inject constructor() {
                     }
                     rate > -MIN_LOSS_RATE && waistNotDropping -> {
                         delta = DECREASE
-                        reason = "体重基本没降且腰围没有下降，下调热量"
+                        reason = if (weightChangeKg >= WEIGHT_STABLE_KG) {
+                            "体重上涨，说明消耗被高估，下调热量"
+                        } else {
+                            "体重基本没降且腰围没有下降，下调热量"
+                        }
                     }
                     rate > -MIN_LOSS_RATE -> {
                         reason = "体重持平但腰围在下降，属于减脂重塑，保持热量"
@@ -173,10 +186,13 @@ class AdjustCalorieTargetUseCase @Inject constructor() {
 
         // 依从性闸门放在最后：先让安全边界把 delta 夹完，再判断是否真的打算改。
         // 欠吃/超吃时目标不动 —— 包括减脂掉太快的情形，那时该做的是把摄入补到目标附近。
+        // 但意图与实测冲突（减脂却涨重等）时跳过：体重已经证明目标偏高/偏低，应相信实测纠正。
         var blockedByAdherence = false
         val intake = averageIntake?.takeIf { it > 0 }
 
-        if (delta != 0 && !safetyIncrease && intake != null && adherence != null) {
+        if (delta != 0 && !safetyIncrease && !intentConflictsWithMeasurement &&
+            intake != null && adherence != null
+        ) {
             val advice = adherenceAdvice(adherence, intake, intakeDays)
             if (advice != null) {
                 reason = advice
@@ -239,6 +255,9 @@ class AdjustCalorieTargetUseCase @Inject constructor() {
     }
 
     private companion object {
+        /** 窗口内体重变化超过这个值就算「明显偏离」，与身体状态结算的稳定阈值一致。 */
+        const val WEIGHT_STABLE_KG = 0.5f
+
         // 每 15 天相对体重的变化速率阈值。
         const val MIN_LOSS_RATE = 0.006f          // 0.6%
         const val TOO_FAST_LOSS_RATE = 0.021f     // 2.1%
